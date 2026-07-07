@@ -1,6 +1,10 @@
-# Voca Web App 📱💬
+<div align="center">
+  <img src="public/sunsanlogo.png" width="120" alt="Sunsan Logo" />
+  <h1>Sunsan Messenger</h1>
+  <p>Secure, feature-rich messaging and video calling application built with modern web technologies.</p>
+</div>
 
-Voca is a comprehensive, feature-rich messaging and video calling application built with modern web technologies. It combines the functionality of a chat app with social media features, offering real-time communication, media sharing, and social networking capabilities.
+Sunsan Messenger combines the functionality of a secure chat app with modern social features, offering real-time communication, media sharing, WebRTC calling, and social networking capabilities.
 
 ## 🌟 Key Features
 
@@ -80,7 +84,7 @@ Voca is a comprehensive, feature-rich messaging and video calling application bu
 1.  **Clone the repository**
     ```bash
     git clone <repository-url>
-    cd voca-web-app
+    cd sunsan-messenger
     ```
 
 2.  **Install Dependencies**
