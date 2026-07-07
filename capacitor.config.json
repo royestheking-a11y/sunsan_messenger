@@ -1,6 +1,6 @@
 {
   "appId": "voca.apk",
-  "appName": "Voca",
+  "appName": "Sunsan",
   "webDir": "dist",
   "plugins": {
     "GoogleAuth": {
@@ -8,7 +8,7 @@
         "profile",
         "email"
       ],
-      "serverClientId": "1020729373464-k2r75s12004avif8jj3u0g5l4nq5qo4a.apps.googleusercontent.com",
+      "serverClientId": "1020729373464-m48ld29rfgkeocgu9al5ea4qtq23pdqi.apps.googleusercontent.com",
       "forceCodeForRefreshToken": true
     },
     "PushNotifications": {

@@ -5,7 +5,7 @@ import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 if (Capacitor.isNativePlatform()) {
   GoogleAuth.initialize({
     clientId:
-      "1020729373464-k2r75s12004avif8jj3u0g5l4nq5qo4a.apps.googleusercontent.com",
+      "1020729373464-m48ld29rfgkeocgu9al5ea4qtq23pdqi.apps.googleusercontent.com",
     scopes: ["profile", "email"],
     grantOfflineAccess: true,
   });

@@ -8,7 +8,7 @@ import "./index.css";
 console.log("🚀 main.tsx: loaded");
 
 const GOOGLE_CLIENT_ID =
-  "1020729373464-k2r75s12004avif8jj3u0g5l4nq5qo4a.apps.googleusercontent.com";
+  "1020729373464-m48ld29rfgkeocgu9al5ea4qtq23pdqi.apps.googleusercontent.com";
 
 // Register custom service worker for push notifications
 if ("serviceWorker" in navigator) {
