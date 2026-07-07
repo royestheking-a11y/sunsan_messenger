@@ -124,7 +124,7 @@ export const Navbar = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#FAF8F5] border-l border-gray-200/40 text-gray-900 w-full sm:max-w-sm p-0">
-              <div className="p-6 h-full flex flex-col">
+              <div className="p-6 h-full flex flex-col overflow-y-auto">
                 <SheetHeader className="mb-8">
                   <SheetTitle className="text-gray-900 text-left flex flex-col justify-center items-start">
                     <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-[#F48FB1] to-[#E91E8C] bg-clip-text text-transparent leading-none mb-0.5">
