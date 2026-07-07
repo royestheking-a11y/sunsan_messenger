@@ -631,8 +631,8 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
           <div className="my-auto max-w-md w-full mx-auto space-y-8 pt-12 md:pt-0">
             {/* Mobile Header (Hidden on Desktop) */}
             <div className="md:hidden text-center mb-8">
-              <div className="w-14 h-14 bg-linear-to-tr from-[#F48FB1] to-[#E91E8C] rounded-2xl flex items-center justify-center shadow-lg shadow-[#F48FB1]/20 mx-auto mb-4">
-                <span className="text-2xl font-bold text-white">V</span>
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-pink-100 mx-auto mb-4 overflow-hidden p-2 border border-pink-100">
+                <img src="/sunsanlogo.png" className="w-full h-full object-contain" alt="Sunsan Logo" />
               </div>
               <span className="font-bold text-xs tracking-wider text-[#E91E8C] block uppercase mb-1">SUNSAN MESSENGER</span>
             </div>
