@@ -140,7 +140,7 @@ export interface Post {
 const VOCA_TEAM_USER: User = {
   id: "voca-team",
   name: "Sunsan Team",
-  email: "team@voca.com",
+  email: "team@sunsan.com",
   avatar: "/sunsanlogo.png",
   role: "admin",
   status: "online",
@@ -355,7 +355,7 @@ const MOCK_CHATS: Chat[] = [
     ],
     unreadCount: 0,
     isGroup: true,
-    name: "Project Voca Team",
+    name: "Project Sunsan Team",
     groupImage:
       "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150&h=150&fit=crop",
   },
@@ -363,8 +363,8 @@ const MOCK_CHATS: Chat[] = [
 const MOCK_ADS: Advertisement[] = [
   {
     id: "ad1",
-    title: "Premium Voca",
-    content: "Upgrade to Voca Premium for unlimited file sharing.",
+    title: "Premium Sunsan",
+    content: "Upgrade to Sunsan Premium for unlimited file sharing.",
     imageUrl:
       "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJlbWl1bXxlbnwwfHwwfHx8MA%3D%3D",
     position: "chat_list",

@@ -233,14 +233,14 @@ router.post('/broadcast', async (req, res) => {
         let vocaTeam = await User.findOne({ isVocaTeam: true });
         if (!vocaTeam) {
             vocaTeam = await User.create({
-                name: 'Voca Team',
-                email: 'team@voca.com',
+                name: 'Sunsan Team',
+                email: 'team@sunsan.com',
                 password: 'vocateam123',
                 role: 'admin',
                 isVocaTeam: true,
                 verified: true,
-                avatar: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=150&h=150&fit=crop',
-                about: 'Official Voca Team - Announcements & Updates'
+                avatar: '/sunsanlogo.png',
+                about: 'Official Sunsan Team - Announcements & Updates'
             });
         }
 

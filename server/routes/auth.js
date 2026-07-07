@@ -53,7 +53,7 @@ router.post('/signup', async (req, res) => {
             const welcomeMessage = await Message.create({
                 chatId: chat._id,
                 senderId: vocaTeam._id,
-                content: `👋 Welcome to Voca, ${name}!\n\nWe're thrilled to have you here! Voca is your space to connect, chat, and share moments with people who matter.\n\n✨ Tips to get started:\n• Complete your profile to let others know you\n• Explore and connect with new people\n• Share your first status update\n\nIf you have any questions, we're here to help. Enjoy your journey on Voca! 💬`,
+                content: `👋 Welcome to Sunsan Messenger, ${name}!\n\nWe're thrilled to have you here! Sunsan Messenger is your space to connect, chat, and share moments with people who matter.\n\n✨ Tips to get started:\n• Complete your profile to let others know you\n• Explore and connect with new people\n• Share your first status update\n\nIf you have any questions, we're here to help. Enjoy your journey on Sunsan Messenger! 💬`,
                 type: 'text',
                 status: 'delivered',
                 timestamp: new Date()
@@ -193,7 +193,7 @@ router.post('/google', async (req, res) => {
             const welcomeMessage = await Message.create({
                 chatId: chat._id,
                 senderId: vocaTeam._id,
-                content: `👋 Welcome to Voca, ${name}!\n\nWe're thrilled to have you here! \n\n✨ Tips to get started:\n• Complete your profile\n• Explore and connect\n\nEnjoy your Voca journey! 💬`,
+                content: `👋 Welcome to Sunsan Messenger, ${name}!\n\nWe're thrilled to have you here! \n\n✨ Tips to get started:\n• Complete your profile\n• Explore and connect\n\nEnjoy your Sunsan Messenger journey! 💬`,
                 type: 'text',
                 status: 'delivered',
                 timestamp: new Date()

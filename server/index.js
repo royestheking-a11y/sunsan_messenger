@@ -565,15 +565,15 @@ const seedData = async () => {
 
             // Create Voca Team user
             await User.create({
-                name: 'Voca Team',
-                email: 'team@voca.com',
+                name: 'Sunsan Team',
+                email: 'team@sunsan.com',
                 password: 'vocateam123',
                 role: 'admin',
                 isVocaTeam: true,
                 verified: true,
                 status: 'online',
-                avatar: 'https://res.cloudinary.com/dfvc27xla/image/upload/v1766864808/voca/profiles/voca-team-avatar.png',
-                about: 'Official Voca Team - Announcements & Updates',
+                avatar: '/sunsanlogo.png',
+                about: 'Official Sunsan Team - Announcements & Updates',
                 joinedAt: new Date()
             });
 
