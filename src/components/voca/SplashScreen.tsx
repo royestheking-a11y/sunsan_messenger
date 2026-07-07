@@ -1,126 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
 interface SplashScreenProps {
-    isLoading: boolean;
-    onComplete?: () => void;
+  isLoading: boolean;
+  onComplete?: () => void;
 }
 
 export const SplashScreen = ({ isLoading, onComplete }: SplashScreenProps) => {
-    const [shouldHide, setShouldHide] = useState(false);
-    const [isDark, setIsDark] = useState(false);
+  const [shouldHide, setShouldHide] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
-    useEffect(() => {
-        // Detect theme preference - check localStorage first, then system preference
-        const savedTheme = localStorage.getItem('voca-theme');
-        if (savedTheme === 'dark') {
-            setIsDark(true);
-        } else if (savedTheme === 'light') {
-            setIsDark(false);
-        } else if (savedTheme === 'system' || !savedTheme) {
-            // Check system preference
-            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-        }
-        // Also check if document has dark class (backup detection)
-        if (document.documentElement.classList.contains('dark')) {
-            setIsDark(true);
-        }
-    }, []);
+  useEffect(() => {
+    // Detect theme preference - check localStorage first, then system preference
+    const savedTheme = localStorage.getItem("voca-theme");
+    if (savedTheme === "dark") {
+      setIsDark(true);
+    } else if (savedTheme === "light") {
+      setIsDark(false);
+    } else if (savedTheme === "system" || !savedTheme) {
+      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+    if (document.documentElement.classList.contains("dark")) {
+      setIsDark(true);
+    }
+  }, []);
 
-    useEffect(() => {
-        // When loading is done, hide splash after a brief moment
-        if (!isLoading) {
-            const hideTimer = setTimeout(() => {
-                setShouldHide(true);
-                onComplete?.();
-            }, 500);
-            return () => clearTimeout(hideTimer);
-        }
-    }, [isLoading, onComplete]);
+  useEffect(() => {
+    if (!isLoading) {
+      const hideTimer = setTimeout(() => {
+        setShouldHide(true);
+        onComplete?.();
+      }, 700); // Smooth hold before fade out
+      return () => clearTimeout(hideTimer);
+    }
+  }, [isLoading, onComplete]);
 
-    if (shouldHide) return null;
+  if (shouldHide) return null;
 
-    return (
-        <AnimatePresence>
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden ${
+          isDark ? "bg-[#0b0e11]" : "bg-white"
+        }`}
+      >
+        {/* Decorative Radial Background Orbs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className={`absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full blur-[160px] opacity-20 transition-colors duration-500 ${
+              isDark ? "bg-[#E91E8C]/10" : "bg-[#F48FB1]/15"
+            }`}
+          />
+          <div
+            className={`absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full blur-[160px] opacity-20 transition-colors duration-500 ${
+              isDark ? "bg-[#F48FB1]/8" : "bg-[#E91E8C]/10"
+            }`}
+          />
+        </div>
+
+        {/* Subtle background color overlay */}
+        <div
+          className={`absolute inset-0 pointer-events-none transition-colors duration-500 ${
+            isDark
+              ? "bg-gradient-to-br from-[#0b0e11] via-[#11171d] to-[#0b0e11]"
+              : "bg-gradient-to-br from-[#fff6f9] via-[#fffbfd] to-[#fff1f5]"
+          }`}
+        />
+
+        {/* Clover / Flower Spinner in Center */}
+        <div className="relative z-10 flex flex-col items-center justify-center animate-in zoom-in-95 duration-500">
+          <div className="relative w-24 h-24 flex items-center justify-center">
+            {/* Spinning container */}
             <motion.div
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center ${isDark ? 'bg-[#0f1c24]' : 'bg-white'
-                    }`}
+              animate={{ rotate: 360 }}
+              transition={{
+                repeat: Infinity,
+                duration: 2.5,
+                ease: "linear",
+              }}
+              className="w-20 h-20 flex items-center justify-center"
             >
-                {/* Subtle gradient background */}
-                <div className={`absolute inset-0 pointer-events-none ${isDark
-                        ? 'bg-gradient-to-br from-[#0f1c24] via-[#1a2c36] to-[#0f1c24]'
-                        : 'bg-gradient-to-br from-white via-gray-50 to-[#e8f5f4]'
-                    }`} />
-
-                {/* Logo Container */}
-                <div className="relative z-10 flex flex-col items-center">
-                    {/* V Logo with gradient */}
-                    <motion.div
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 200,
-                            damping: 15,
-                            duration: 0.6
-                        }}
-                        className="relative"
-                    >
-                        <div className="w-24 h-24 bg-gradient-to-br from-[#006D77] to-[#83C5BE] rounded-3xl flex items-center justify-center shadow-2xl shadow-[#006D77]/30">
-                            <span className="text-white font-bold text-5xl tracking-tight">V</span>
-                        </div>
-
-                        {/* Glow effect */}
-                        <div className="absolute inset-0 w-24 h-24 bg-[#006D77] rounded-3xl blur-xl opacity-30 -z-10" />
-                    </motion.div>
-
-                    {/* Loading indicator - subtle dots */}
-                    {isLoading && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="flex gap-1.5 mt-10"
-                        >
-                            {[0, 1, 2].map((i) => (
-                                <motion.div
-                                    key={i}
-                                    animate={{
-                                        scale: [1, 1.3, 1],
-                                        opacity: [0.3, 1, 0.3]
-                                    }}
-                                    transition={{
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        delay: i * 0.15
-                                    }}
-                                    className="w-2.5 h-2.5 rounded-full bg-[#006D77]"
-                                />
-                            ))}
-                        </motion.div>
-                    )}
-                </div>
-
-                {/* Bottom branding with version */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.6 }}
-                    transition={{ delay: 0.3 }}
-                    className="absolute bottom-8 flex flex-col items-center gap-1"
-                >
-                    <span className={`text-xs tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-                        <span className="text-[#006D77] font-medium">Voca Team</span>
-                    </span>
-                    <span className={`text-[10px] tracking-widest ${isDark ? 'text-gray-600' : 'text-gray-300'}`}>
-                        Version 3.0
-                    </span>
-                </motion.div>
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <defs>
+                  <linearGradient id="petal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#F48FB1" />
+                    <stop offset="100%" stopColor="#E91E8C" />
+                  </linearGradient>
+                </defs>
+                <g transform="translate(50, 50)">
+                  {/* 6 overlapping translucent petals */}
+                  {[...Array(6)].map((_, i) => {
+                    const angle = i * 60;
+                    return (
+                      <g key={i} transform={`rotate(${angle})`}>
+                        <circle
+                          cx="0"
+                          cy="-18"
+                          r="15"
+                          fill="url(#petal-grad)"
+                          opacity="0.65"
+                          style={{
+                            mixBlendMode: isDark ? "screen" : "multiply",
+                          }}
+                        />
+                      </g>
+                    );
+                  })}
+                  {/* Center core mask to form hollow ring effect */}
+                  <circle cx="0" cy="0" r="7" className={isDark ? "fill-[#0b0e11]" : "fill-white"} />
+                </g>
+              </svg>
             </motion.div>
-        </AnimatePresence>
-    );
+          </div>
+          
+          {/* Extremely minimal text */}
+          <span className={`text-[10px] tracking-[0.3em] uppercase font-semibold mt-6 animate-pulse ${
+            isDark ? "text-gray-500" : "text-gray-400"
+          } pl-[0.3em] select-none`}>
+            Loading
+          </span>
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
 };
 
 export default SplashScreen;

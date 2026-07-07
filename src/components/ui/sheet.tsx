@@ -1,33 +1,26 @@
 "use client";
-
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
-
 import { cn } from "./utils";
-
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
-
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
-
 function SheetClose({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
-
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
-
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
@@ -38,14 +31,13 @@ const SheetOverlay = React.forwardRef<
       data-slot="sheet-overlay"
       className={cn(
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
-        className,
+        className
       )}
       {...props}
     />
   );
 });
 SheetOverlay.displayName = "SheetOverlay";
-
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content> & {
@@ -54,7 +46,8 @@ const SheetContent = React.forwardRef<
 >(({ className, children, side = "right", ...props }, ref) => {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      {" "}
+      <SheetOverlay />{" "}
       <SheetPrimitive.Content
         ref={ref}
         data-slot="sheet-content"
@@ -68,21 +61,21 @@ const SheetContent = React.forwardRef<
             "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
           side === "bottom" &&
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
-          className,
+          className
         )}
         {...props}
       >
-        {children}
+        {" "}
+        {children}{" "}
         <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-          <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
-      </SheetPrimitive.Content>
+          {" "}
+          <XIcon className="size-4" /> <span className="sr-only">Close</span>{" "}
+        </SheetPrimitive.Close>{" "}
+      </SheetPrimitive.Content>{" "}
     </SheetPortal>
   );
 });
 SheetContent.displayName = "SheetContent";
-
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -92,7 +85,6 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -102,7 +94,6 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
     />
   );
 }
-
 const SheetTitle = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
@@ -117,7 +108,6 @@ const SheetTitle = React.forwardRef<
   );
 });
 SheetTitle.displayName = "SheetTitle";
-
 const SheetDescription = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
@@ -132,7 +122,6 @@ const SheetDescription = React.forwardRef<
   );
 });
 SheetDescription.displayName = "SheetDescription";
-
 export {
   Sheet,
   SheetTrigger,

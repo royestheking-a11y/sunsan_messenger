@@ -30,7 +30,7 @@ This guide works for deploying the **Frontend to Vercel** and the **Backend to R
     *   **Framework Preset**: Vite
     *   **Root Directory**: `./` (default)
     *   **Build Command**: `npm run build`
-    *   **Output Directory**: `build`
+    *   **Output Directory**: `dist` (default for Vite)
 5.  **Environment Variables**:
     *   `VITE_API_URL`: Your Render Backend URL + `/api` (e.g., `https://voca-server.onrender.com/api`)
     *   `VITE_SOCKET_URL`: Your Render Backend URL (e.g., `https://voca-server.onrender.com`)

@@ -40,73 +40,24 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* WhatsApp Theme Variables - Light Mode Default */
-  --wa-app-bg: #d1d7db;
+  /* SUNSAN MESSENGER Theme Variables - Light Pink & White */
+  --wa-app-bg: #FFE4EF;
   --wa-sidebar-bg: #ffffff;
-  --wa-header-bg: #f0f2f5;
-  --wa-chat-bg: #efeae2;
+  --wa-header-bg: #FFF0F5;
+  --wa-chat-bg: #FFF5F8;
   --wa-panel-bg: #ffffff;
-  --wa-input-bg: #f0f2f5;
-  --wa-primary: #00a884;
-  --wa-text-primary: #111b21;
-  --wa-text-secondary: #667781;
-  --wa-border: #e9edef;
-  --wa-hover: #f5f6f6;
+  --wa-input-bg: #FFF0F5;
+  --wa-primary: #F48FB1;
+  --wa-text-primary: #1A1A2E;
+  --wa-text-secondary: #8B6B7A;
+  --wa-border: #FADADD;
+  --wa-hover: #FFF0F5;
   --wa-incoming-bg: #ffffff;
-  --wa-outgoing-bg: #d9fdd3;
+  --wa-outgoing-bg: #F48FB1;
+  --wa-outgoing-text: #ffffff;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
 
-  /* WhatsApp Theme Variables - Dark Mode */
-  --wa-app-bg: #0b141a;
-  --wa-sidebar-bg: #111b21;
-  --wa-header-bg: #202c33;
-  --wa-chat-bg: #0b141a;
-  --wa-panel-bg: #111b21;
-  --wa-input-bg: #2a3942;
-  --wa-primary: #00a884;
-  --wa-text-primary: #e9edef;
-  --wa-text-secondary: #8696a0;
-  --wa-border: #222d34;
-  --wa-hover: #202c33;
-  --wa-incoming-bg: #202c33;
-  --wa-outgoing-bg: #005c4b;
-}
 
 @theme inline {
   --color-background: var(--background);

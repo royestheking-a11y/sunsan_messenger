@@ -1,11 +1,8 @@
 "use client";
-
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
-
 import { cn } from "./utils";
 import { getOptimizedImageUrl, IMAGE_PRESETS } from "../../lib/images";
-
 function Avatar({
   className,
   ...props
@@ -15,23 +12,21 @@ function Avatar({
       data-slot="avatar"
       className={cn(
         "relative flex size-10 shrink-0 overflow-hidden rounded-full",
-        className,
+        className
       )}
       {...props}
     />
   );
 }
-
 function AvatarImage({
   className,
   src,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-  const optimizedSrc = React.useMemo(() => 
-    getOptimizedImageUrl(src, IMAGE_PRESETS.AVATAR), 
+  const optimizedSrc = React.useMemo(
+    () => getOptimizedImageUrl(src, IMAGE_PRESETS.AVATAR),
     [src]
   );
-
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -42,7 +37,6 @@ function AvatarImage({
     />
   );
 }
-
 function AvatarFallback({
   className,
   ...props
@@ -52,11 +46,10 @@ function AvatarFallback({
       data-slot="avatar-fallback"
       className={cn(
         "bg-muted flex size-full items-center justify-center rounded-full",
-        className,
+        className
       )}
       {...props}
     />
   );
 }
-
 export { Avatar, AvatarImage, AvatarFallback };

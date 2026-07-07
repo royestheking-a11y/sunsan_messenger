@@ -46,7 +46,7 @@ export const ContactInfo = ({ user, onClose, isGroup, groupName, groupImage, onS
         }
     };
 
-    const displayImage = isGroup ? groupImage : user.avatar;
+    const displayImage = isGroup ? groupImage : (user.isSunsanTeam ? '/sunsanlogo.png' : user.avatar);
     const displayName = isGroup ? groupName : user.name;
     const displaySub = isGroup ? `Group • ${user.status === 'online' ? 'Active' : 'Inactive'}` : user.email;
 
@@ -296,7 +296,12 @@ export const ContactInfo = ({ user, onClose, isGroup, groupName, groupImage, onS
 
                     {/* Profile Hero */}
                     <div className="bg-[var(--wa-panel-bg)] p-8 flex flex-col items-center shadow-sm">
-                        <Avatar className="w-48 h-48 mb-4 cursor-pointer hover:opacity-90 transition-opacity ring-4 ring-[var(--wa-app-bg)]">
+                        <Avatar
+                            className="w-48 h-48 mb-4 cursor-pointer hover:opacity-90 transition-opacity ring-4 ring-[var(--wa-app-bg)]"
+                            onClick={() => {
+                                if (displayImage) setLightboxImage(displayImage);
+                            }}
+                        >
                             <AvatarImage src={displayImage} className="object-cover" />
                             <AvatarFallback className="text-4xl bg-[#6a7f8a] text-white">{displayName?.charAt(0)}</AvatarFallback>
                         </Avatar>
@@ -350,7 +355,7 @@ export const ContactInfo = ({ user, onClose, isGroup, groupName, groupImage, onS
                                     {relevantChat.participants.map(member => (
                                         <div key={member.id} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-[var(--wa-hover)] -mx-4 px-4 transition-colors">
                                             <Avatar className="h-10 w-10">
-                                                <AvatarImage src={member.avatar} />
+                                                <AvatarImage src={member.isSunsanTeam ? '/sunsanlogo.png' : member.avatar} />
                                                 <AvatarFallback className="bg-[#6a7f8a] text-white">{member.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">

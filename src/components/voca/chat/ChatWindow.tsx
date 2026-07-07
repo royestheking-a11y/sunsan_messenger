@@ -161,17 +161,17 @@ export const ChatWindow = () => {
                     </div>
 
                     <div className="bg-[var(--wa-header-bg)] p-8 rounded-full mb-6 z-10 shadow-lg">
-                        <div className="w-16 h-16 bg-[#00a884] rounded-2xl flex items-center justify-center transform rotate-12 shadow-lg">
-                            <span className="text-3xl text-white font-bold">V</span>
+                        <div className="w-16 h-16 flex items-center justify-center transform rotate-12">
+                            <img src="/sunsanlogo.png" className="w-16 h-16 object-contain" />
                         </div>
                     </div>
-                    <h2 className="text-3xl font-light text-[var(--wa-text-primary)] mb-4 z-10">Voca Web</h2>
+                    <h2 className="text-3xl font-light text-[var(--wa-text-primary)] mb-4 z-10">Sunsan Web</h2>
                     <p className="text-[var(--wa-text-secondary)] max-w-[400px] z-10">
                         Send and receive messages without keeping your phone online.<br />
-                        Use Voca on up to 4 linked devices and 1 phone.
+                        Use Sunsan Messenger on up to 4 linked devices and 1 phone.
                     </p>
                     <div className="mt-12 flex items-center gap-2 text-[var(--wa-text-secondary)] text-xs z-10 font-medium tracking-wide">
-                        <div className="w-2.5 h-2.5 bg-[#667781] rounded-full" />
+                        <div className="w-2.5 h-2.5 bg-[#E91E8C] rounded-full" />
                         End-to-end encrypted
                     </div>
                 </motion.div>
@@ -181,15 +181,15 @@ export const ChatWindow = () => {
 
     const otherParticipant = activeChat.participants.find(p => p.id !== currentUser?.id);
     const chatName = activeChat.isGroup ? activeChat.name : otherParticipant?.name;
-    const chatImage = activeChat.isGroup ? activeChat.groupImage : otherParticipant?.avatar;
+    const chatImage = activeChat.isGroup ? activeChat.groupImage : (otherParticipant?.isSunsanTeam ? '/sunsanlogo.png' : otherParticipant?.avatar);
     const status = activeChat.isGroup ?
         `${activeChat.participants.map(p => p.name.split(' ')[0]).join(', ')}` :
         otherParticipant?.status === 'online' ? 'Online' : `Last seen ${new Date(otherParticipant?.lastSeen || '').toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`;
 
     const isBlocked = !activeChat.isGroup && otherParticipant && currentUser?.blockedUsers?.includes(otherParticipant.id);
 
-    // Voca Team chat is read-only (users cannot reply)
-    const isVocaTeamChat = !activeChat.isGroup && otherParticipant?.isVocaTeam;
+    // Sunsan Team chat is read-only (users cannot reply)
+    const isSunsanTeamChat = !activeChat.isGroup && otherParticipant?.isSunsanTeam;
 
     // Unknown Contact Logic
     const isUnknownContact = !activeChat.isGroup && !isBlocked && otherParticipant && !currentUser?.favorites?.includes(otherParticipant.id);
@@ -908,11 +908,11 @@ export const ChatWindow = () => {
                     )}
 
                     <div className="px-4 py-3 flex items-center gap-3 min-h-[64px]">
-                        {isVocaTeamChat ? (
+                        {isSunsanTeamChat ? (
                             <div className="flex-1 flex items-center justify-center text-sm text-[var(--wa-text-secondary)]">
                                 <div className="flex items-center gap-2 bg-[var(--wa-hover)] px-4 py-2 rounded-lg">
                                     <span className="text-blue-400">📢</span>
-                                    <span>This is an official announcement channel from Voca Team</span>
+                                    <span>This is an official announcement channel from Sunsan Team</span>
                                 </div>
                             </div>
                         ) : isBlocked ? (
@@ -957,7 +957,7 @@ export const ChatWindow = () => {
                                 </div>
                                 <Button
                                     size="icon"
-                                    className="bg-[#00a884] hover:bg-[#008f72] text-[#111b21] rounded-full h-10 w-10 shadow-md transform transition-all hover:scale-110 active:scale-95"
+                                    className="bg-[#E91E8C] hover:bg-[#c2185b] text-white rounded-full h-10 w-10 shadow-md transform transition-all hover:scale-110 active:scale-95"
                                     onClick={stopRecording}
                                 >
                                     <Send className="w-5 h-5 ml-0.5" />
@@ -1107,13 +1107,13 @@ export const ChatWindow = () => {
                                         )}
                                     </div>
 
-                                    {/* MIC / SEND BUTTON (Outside, Green Circle) */}
+                                    {/* MIC / SEND BUTTON (Outside, Pink Circle) */}
                                     <div className="shrink-0 z-20">
                                         {inputText.trim() ? (
                                             <Button
                                                 onClick={() => handleSend()}
                                                 size="icon"
-                                                className="bg-[#00a884] hover:bg-[#008f72] text-white rounded-full h-12 w-12 shadow-lg flex items-center justify-center transition-transform active:scale-95"
+                                                className="bg-[#E91E8C] hover:bg-[#c2185b] text-white rounded-full h-12 w-12 shadow-lg flex items-center justify-center transition-transform active:scale-95"
                                             >
                                                 <Send className="w-5 h-5 ml-0.5" />
                                             </Button>
@@ -1122,7 +1122,7 @@ export const ChatWindow = () => {
                                                 variant="ghost"
                                                 size="icon"
                                                 className={cn(
-                                                    "bg-[#00a884] hover:bg-[#008f72] text-white rounded-full h-12 w-12 shadow-md flex items-center justify-center transition-all select-none touch-none",
+                                                    "bg-[#E91E8C] hover:bg-[#c2185b] text-white rounded-full h-12 w-12 shadow-md flex items-center justify-center transition-all select-none touch-none",
                                                     isRecording && "bg-red-500 hover:bg-red-600 scale-110",
                                                 )}
                                                 style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none', touchAction: 'none' }}

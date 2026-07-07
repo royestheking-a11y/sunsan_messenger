@@ -95,7 +95,7 @@ export const UserProfileSettings = ({ isOpen, onClose }: UserProfileSettingsProp
 
             <ScrollArea className="h-[calc(100vh-112px)]">
                 <div className="flex flex-col">
-                    <div className="p-6 flex flex-col items-center -mt-10 relative z-10 mb-4">
+                    <div className="p-6 flex flex-col items-center mt-4 relative z-10 mb-4">
                         {/* Avatar */}
                         <div className="relative group cursor-pointer" onClick={handlePhotoUpload}>
                             <Avatar className="w-40 h-40 border-4 border-[var(--wa-sidebar-bg)] shadow-lg">
@@ -510,11 +510,11 @@ export const UserProfileSettings = ({ isOpen, onClose }: UserProfileSettingsProp
         <>
             {renderHeader('App Info', 'help')}
             <div className="h-[calc(100vh-64px)] flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-24 h-24 bg-[#00a884] rounded-2xl flex items-center justify-center transform rotate-12 shadow-lg mb-8">
-                    <span className="text-4xl text-white font-bold">V</span>
+                <div className="w-24 h-24 flex items-center justify-center transform rotate-12 mb-8">
+                    <img src="/sunsanlogo.png" className="w-24 h-24 object-contain" />
                 </div>
 
-                <h3 className="text-2xl font-medium text-[var(--wa-text-primary)] mb-2">Voca Web</h3>
+                <h3 className="text-2xl font-medium text-[var(--wa-text-primary)] mb-2">Sunsan Web</h3>
                 <p className="text-[var(--wa-text-secondary)] text-lg mb-8">Version 3.0</p>
 
                 <div className="text-sm text-[var(--wa-text-secondary)] opacity-60">

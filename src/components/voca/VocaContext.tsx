@@ -1,1342 +1,1792 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { authAPI, usersAPI, chatsAPI, postsAPI, statusesAPI, adminAPI, uploadAPI, callsAPI, adsAPI } from '../../lib/api';
-import { User, Chat, Message, Advertisement, Report, StatusUpdate, UserSettings, Call, Post } from '../../lib/data';
-import { useSocket } from './SocketContext';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+} from "react";
+import {
+  authAPI,
+  usersAPI,
+  chatsAPI,
+  postsAPI,
+  statusesAPI,
+  adminAPI,
+  uploadAPI,
+  callsAPI,
+  adsAPI,
+} from "../../lib/api";
+import {
+  User,
+  Chat,
+  Message,
+  Advertisement,
+  Report,
+  StatusUpdate,
+  UserSettings,
+  Call,
+  Post,
+} from "../../lib/data";
+import { useSocket } from "./SocketContext";
 
 interface VocaContextType {
-    currentUser: User | null;
-    users: User[];
-    chats: Chat[];
-    activeChatId: string | null;
-    ads: Advertisement[];
-    reports: Report[];
-    statuses: StatusUpdate[];
-    calls: Call[];
-    loading: boolean;
-    loadingMessages: Set<string>;
-    error: string | null;
+  currentUser: User | null;
+  users: User[];
+  chats: Chat[];
+  activeChatId: string | null;
+  ads: Advertisement[];
+  reports: Report[];
+  statuses: StatusUpdate[];
+  calls: Call[];
+  loading: boolean;
+  loadingMessages: Set<string>;
+  error: string | null;
 
-    // Auth
-    login: (email: string, password: string) => Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }>;
-    googleLogin: (dataOrCredential: string | { googleId: string; email: string; name: string; avatar: string }) => Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }>;
-    signup: (userData: any) => Promise<boolean>;
-    logout: () => Promise<void>;
-    updateProfilePhoto: (url: string) => Promise<void>;
-    updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
+  // Auth
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }>;
+  googleLogin: (
+    dataOrCredential:
+      | string
+      | { googleId: string; email: string; name: string; avatar: string }
+  ) => Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }>;
+  signup: (userData: any) => Promise<boolean>;
+  logout: () => Promise<void>;
+  updateProfilePhoto: (url: string) => Promise<void>;
+  updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
 
-    // Chat
-    sendMessage: (chatId: string, content: string, type?: 'text' | 'image' | 'voice' | 'video' | 'doc' | 'call' | 'poll' | 'event' | 'audio' | 'contact' | 'location', mediaUrl?: string, duration?: string, replyToId?: string) => Promise<Message | undefined>;
-    deleteMessage: (chatId: string, messageId: string, forEveryone: boolean) => Promise<void>;
-    starMessage: (chatId: string, messageId: string) => void;
-    setActiveChatId: (id: string | null) => Promise<void>;
-    activeCall: { type: 'voice' | 'video', isIncoming: boolean, participant?: User, offer?: RTCSessionDescriptionInit } | null;
-    startCall: (participantId: string, type: 'voice' | 'video', fallbackParticipant?: User) => void;
-    endCall: (duration?: string, status?: 'missed' | 'completed', isRemote?: boolean) => void;
-    createChat: (participantId: string) => Promise<Chat | undefined>;
-    createGroupChat: (name: string, participantIds: string[], image?: string) => Promise<void>;
-    toggleArchiveChat: (chatId: string) => Promise<void>;
-    toggleFavoriteContact: (contactId: string) => Promise<void>;
-    markChatAsRead: (chatId: string) => Promise<void>;
+  // Chat
+  sendMessage: (
+    chatId: string,
+    content: string,
+    type?:
+      | "text"
+      | "image"
+      | "voice"
+      | "video"
+      | "doc"
+      | "call"
+      | "poll"
+      | "event"
+      | "audio"
+      | "contact"
+      | "location",
+    mediaUrl?: string,
+    duration?: string,
+    replyToId?: string
+  ) => Promise<Message | undefined>;
+  deleteMessage: (
+    chatId: string,
+    messageId: string,
+    forEveryone: boolean
+  ) => Promise<void>;
+  starMessage: (chatId: string, messageId: string) => void;
+  setActiveChatId: (id: string | null) => Promise<void>;
+  activeCall: {
+    type: "voice" | "video";
+    isIncoming: boolean;
+    participant?: User;
+    offer?: RTCSessionDescriptionInit;
+  } | null;
+  startCall: (
+    participantId: string,
+    type: "voice" | "video",
+    fallbackParticipant?: User
+  ) => void;
+  endCall: (
+    duration?: string,
+    status?: "missed" | "completed",
+    isRemote?: boolean
+  ) => void;
+  createChat: (participantId: string) => Promise<Chat | undefined>;
+  createGroupChat: (
+    name: string,
+    participantIds: string[],
+    image?: string
+  ) => Promise<void>;
+  toggleArchiveChat: (chatId: string) => Promise<void>;
+  toggleFavoriteContact: (contactId: string) => Promise<void>;
+  markChatAsRead: (chatId: string) => Promise<void>;
 
-    // Socket message handlers
-    handleIncomingMessage: (chatId: string, message: Message) => void | Promise<void>;
-    handleMessageDelivered: (chatId: string, messageId: string) => void;
-    handleMessageRead: (chatId: string, messageId: string) => void;
-    handleMessageDeleted: (chatId: string, messageId: string) => void;
-    handleMessageEdited: (chatId: string, messageId: string, newContent: string) => void;
+  // Socket message handlers
+  handleIncomingMessage: (
+    chatId: string,
+    message: Message
+  ) => void | Promise<void>;
+  handleMessageDelivered: (chatId: string, messageId: string) => void;
+  handleMessageRead: (chatId: string, messageId: string) => void;
+  handleMessageDeleted: (chatId: string, messageId: string) => void;
+  handleMessageEdited: (
+    chatId: string,
+    messageId: string,
+    newContent: string
+  ) => void;
 
-    // Socket call handler
-    handleIncomingCall: (data: { from: string, offer: RTCSessionDescriptionInit, callType: 'voice' | 'video', caller?: User }) => void;
+  // Socket call handler
+  handleIncomingCall: (data: {
+    from: string;
+    offer: RTCSessionDescriptionInit;
+    callType: "voice" | "video";
+    caller?: User;
+  }) => void;
 
-    // Status
-    createStatus: (content: string, type: 'text' | 'image', color?: string) => Promise<void>;
-    deleteStatus: (statusId: string) => Promise<void>;
+  // Status
+  createStatus: (
+    content: string,
+    type: "text" | "image",
+    color?: string
+  ) => Promise<void>;
+  deleteStatus: (statusId: string) => Promise<void>;
 
-    // Search helper
-    searchMessages: (query: string, chatId?: string) => Message[];
-    editMessage: (chatId: string, messageId: string, newContent: string) => Promise<void>;
-    votePoll: (chatId: string, messageId: string, optionId: string) => Promise<void>;
-    getStarredMessages: () => { message: Message, chat: Chat }[];
+  // Search helper
+  searchMessages: (query: string, chatId?: string) => Message[];
+  editMessage: (
+    chatId: string,
+    messageId: string,
+    newContent: string
+  ) => Promise<void>;
+  votePoll: (
+    chatId: string,
+    messageId: string,
+    optionId: string
+  ) => Promise<void>;
+  getStarredMessages: () => { message: Message; chat: Chat }[];
 
-    // Admin / User Management
-    addUser: (user: Partial<User>) => void;
-    deleteUser: (userId: string) => Promise<void>;
-    banUser: (userId: string) => Promise<void>;
-    unbanUser: (userId: string) => Promise<void>;
-    updateUser: (userId: string, data: Partial<User>) => Promise<void>;
-    blockUser: (userId: string) => Promise<void>;
-    unblockUser: (userId: string) => Promise<void>;
-    deleteChat: (chatId: string) => Promise<void>;
+  // Admin / User Management
+  addUser: (user: Partial<User>) => void;
+  deleteUser: (userId: string) => Promise<void>;
+  banUser: (userId: string) => Promise<void>;
+  unbanUser: (userId: string) => Promise<void>;
+  updateUser: (userId: string, data: Partial<User>) => Promise<void>;
+  blockUser: (userId: string) => Promise<void>;
+  unblockUser: (userId: string) => Promise<void>;
+  deleteChat: (chatId: string) => Promise<void>;
 
-    // Ads
-    createAd: (ad: Omit<Advertisement, 'id' | 'clicks' | 'views'>) => Promise<void>;
-    updateAd: (adId: string, updates: Partial<Advertisement>) => Promise<void>;
-    deleteAd: (adId: string) => Promise<void>;
-    toggleAd: (adId: string) => Promise<void>;
-    incrementAdClick: (adId: string) => void;
-    incrementAdView: (adId: string) => void;
+  // Ads
+  createAd: (
+    ad: Omit<Advertisement, "id" | "clicks" | "views">
+  ) => Promise<void>;
+  updateAd: (adId: string, updates: Partial<Advertisement>) => Promise<void>;
+  deleteAd: (adId: string) => Promise<void>;
+  toggleAd: (adId: string) => Promise<void>;
+  incrementAdClick: (adId: string) => void;
+  incrementAdView: (adId: string) => void;
 
-    // Reports
-    createReport: (report: Omit<Report, 'id' | 'timestamp' | 'status'>) => void;
-    resolveReport: (reportId: string, status: 'resolved' | 'dismissed') => Promise<void>;
+  // Reports
+  createReport: (report: Omit<Report, "id" | "timestamp" | "status">) => void;
+  resolveReport: (
+    reportId: string,
+    status: "resolved" | "dismissed"
+  ) => Promise<void>;
 
-    // Broadcast
-    sendBroadcast: (message: string) => Promise<void>;
+  // Broadcast
+  sendBroadcast: (message: string) => Promise<void>;
 
-    // Posts
-    posts: Post[];
-    createPost: (content: string, imageUrl?: string) => Promise<void>;
-    likePost: (postId: string) => Promise<void>;
-    commentOnPost: (postId: string, content: string) => Promise<void>;
-    sharePost: (postId: string) => Promise<void>;
-    deletePost: (postId: string) => Promise<void>;
+  // Posts
+  posts: Post[];
+  createPost: (content: string, imageUrl?: string) => Promise<void>;
+  likePost: (postId: string) => Promise<void>;
+  commentOnPost: (postId: string, content: string) => Promise<void>;
+  sharePost: (postId: string) => Promise<void>;
+  deletePost: (postId: string) => Promise<void>;
 
-    // System Settings
-    systemSettings: { maintenanceMode: boolean; fileUploadLimitMB: number };
-    updateSystemSettings: (settings: Partial<{ maintenanceMode: boolean; fileUploadLimitMB: number }>) => Promise<void>;
+  // System Settings
+  systemSettings: { maintenanceMode: boolean; fileUploadLimitMB: number };
+  updateSystemSettings: (
+    settings: Partial<{ maintenanceMode: boolean; fileUploadLimitMB: number }>
+  ) => Promise<void>;
 
-    isAdmin: boolean;
-    refreshData: () => Promise<void>;
+  isAdmin: boolean;
+  refreshData: () => Promise<void>;
+
+  // Chat Heads Feature
+  chatHeads: Array<{
+    chatId: string;
+    participant: User;
+    unreadCount: number;
+  }>;
+  setChatHeads: React.Dispatch<React.SetStateAction<Array<{
+    chatId: string;
+    participant: User;
+    unreadCount: number;
+  }>>>;
+  activeMiniChatId: string | null;
+  setActiveMiniChatId: (id: string | null) => void;
 }
 
 const VocaContext = createContext<VocaContextType | undefined>(undefined);
 
 export const VocaProvider = ({ children }: { children: ReactNode }) => {
-    const { socket } = useSocket();
-    // Ref to track current chats for stale closure fix
-    const chatsRef = useRef<Chat[]>([]);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [users, setUsers] = useState<User[]>([]);
-    const [chats, setChats] = useState<Chat[]>([]);
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [statuses, setStatuses] = useState<StatusUpdate[]>([]);
-    const [ads, setAds] = useState<Advertisement[]>([]);
-    const [reports, setReports] = useState<Report[]>([]);
-    const [calls, setCalls] = useState<Call[]>([]);
-    const [systemSettings, setSystemSettings] = useState({ maintenanceMode: false, fileUploadLimitMB: 10 });
+  console.log("🚀 VocaProvider rendering - before useSocket");
+  const { socket } = useSocket();
+  console.log("🚀 VocaProvider rendering - after useSocket");
+  // Ref to track current chats for stale closure fix
+  const chatsRef = useRef<Chat[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [statuses, setStatuses] = useState<StatusUpdate[]>([]);
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [systemSettings, setSystemSettings] = useState({
+    maintenanceMode: false,
+    fileUploadLimitMB: 10,
+  });
 
-    const [activeChatId, setActiveChatIdInternal] = useState<string | null>(null);
-    const [activeCall, setActiveCall] = useState<{ type: 'voice' | 'video', isIncoming: boolean, participant?: User, offer?: RTCSessionDescriptionInit } | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [loadingMessages, setLoadingMessages] = useState<Set<string>>(new Set());
-    const [error, setError] = useState<string | null>(null);
+  const [activeChatId, setActiveChatIdInternal] = useState<string | null>(null);
+  const [activeCall, setActiveCall] = useState<{
+    type: "voice" | "video";
+    isIncoming: boolean;
+    participant?: User;
+    offer?: RTCSessionDescriptionInit;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState<Set<string>>(
+    new Set()
+  );
+  const [error, setError] = useState<string | null>(null);
 
-    const isAdmin = currentUser?.role === 'admin';
+  const [chatHeads, setChatHeads] = useState<Array<{
+    chatId: string;
+    participant: User;
+    unreadCount: number;
+  }>>([]);
+  const [activeMiniChatId, setActiveMiniChatId] = useState<string | null>(null);
 
-    // Sync chatsRef with chats state (fixes stale closure in socket handlers)
-    useEffect(() => {
-        chatsRef.current = chats;
-    }, [chats]);
+  useEffect(() => {
+    if (activeChatId) {
+      setChatHeads((prev) => prev.filter((ch) => ch.chatId !== activeChatId));
+      if (activeMiniChatId === activeChatId) {
+        setActiveMiniChatId(null);
+      }
+    }
+  }, [activeChatId, activeMiniChatId]);
 
-    // Socket call handler - called by SocketContext when call events are received
+  const isAdmin = currentUser?.role === "admin";
+  console.log("🚀 VocaProvider: States initialized");
 
-    const handleIncomingCall = async (data: { from: string, offer: RTCSessionDescriptionInit, callType: 'voice' | 'video', caller?: any }) => {
-        console.log('📞 VocaContext: Handling incoming call', { from: data.from, hasCaller: !!data.caller });
+  // Sync chatsRef with chats state (fixes stale closure in socket handlers)
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
 
-        // Try to find participant in local users list
-        let participant = users.find(u => u.id === data.from);
+  // Socket call handler - called by SocketContext when call events are received
 
-        // If not found, use the caller data sent with the socket event
-        if (!participant && data.caller) {
-            console.log('📞 VocaContext: User not found locally, using provided caller data');
+  const handleIncomingCall = async (data: {
+    from: string;
+    offer: RTCSessionDescriptionInit;
+    callType: "voice" | "video";
+    caller?: any;
+  }) => {
+    console.log("📞 VocaContext: Handling incoming call", {
+      from: data.from,
+      hasCaller: !!data.caller,
+    });
 
-            // Handle legacy backend data (odId vs id)
-            if (data.caller.odId && !data.caller.id) {
-                console.log('📞 VocaContext: Fixing legacy user data (odId -> id)');
-                participant = { ...data.caller, id: data.caller.odId };
-            } else {
-                participant = data.caller;
-            }
+    // Try to find participant in local users list
+    let participant = users.find((u) => u.id === data.from);
+
+    // If not found, use the caller data sent with the socket event
+    if (!participant && data.caller) {
+      console.log(
+        "📞 VocaContext: User not found locally, using provided caller data"
+      );
+
+      // Handle legacy backend data (odId vs id)
+      if (data.caller.odId && !data.caller.id) {
+        console.log("📞 VocaContext: Fixing legacy user data (odId -> id)");
+        participant = { ...data.caller, id: data.caller.odId };
+      } else {
+        participant = data.caller;
+      }
+    }
+
+    // If still not found, try to fetch from API (emergency fallback)
+    if (!participant) {
+      console.log(
+        "📞 VocaContext: Caller not found, fetching from API unavailable context"
+      );
+      // We rely on data.caller being sent from backend which we verified exists.
+    }
+
+    // Check if we already have an active call (incoming or connected) from this user
+    if (activeCall) {
+      console.log(
+        "📞 VocaContext: Ignoring duplicate/concurrent call request",
+        {
+          currentParticipant: activeCall.participant?.id,
+          newRequestFrom: data.from,
         }
+      );
+      return;
+    }
 
-        // If still not found, try to fetch from API (emergency fallback)
-        if (!participant) {
-            console.log('📞 VocaContext: Caller not found, fetching from API unavailable context');
-            // We rely on data.caller being sent from backend which we verified exists.
-        }
+    if (participant) {
+      console.log("📞 VocaContext: Setting active call", {
+        participantName: participant.name,
+      });
 
-        // Check if we already have an active call (incoming or connected) from this user
-        if (activeCall) {
-            console.log('📞 VocaContext: Ignoring duplicate/concurrent call request', {
-                currentParticipant: activeCall.participant?.id,
-                newRequestFrom: data.from
-            });
-            return;
-        }
-
-        if (participant) {
-            console.log('📞 VocaContext: Setting active call', { participantName: participant.name });
-            setActiveCall({
-                type: data.callType,
-                isIncoming: true,
-                participant,
-                offer: data.offer
-            });
-        } else {
-            console.error('📞 VocaContext: FAILED to start call - Call participant not found!', { from: data.from });
-        }
-    };
-
-    // Load initial data on mount
-    useEffect(() => {
-        const initializeApp = async () => {
-            if (authAPI.isAuthenticated()) {
-                try {
-                    const user = await authAPI.getCurrentUser();
-                    setCurrentUser(user);
-                    await loadAllData(user);
-                } catch (err) {
-                    console.error('Auth check failed:', err);
-                    authAPI.removeToken();
-                }
-            }
-            setLoading(false);
+      // Trigger background browser notification for incoming calls
+      if (document.hidden && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        const title = `Incoming ${data.callType} call`;
+        const options = {
+          body: `from ${participant.name}`,
+          icon: "/pwa-192x192.png",
+          badge: "/pwa-192x192.png",
+          tag: "call",
+          renotify: true,
+          data: { url: "/chat" },
         };
-        initializeApp();
-    }, []);
-
-    // Apply theme
-    useEffect(() => {
-        const theme = currentUser?.settings?.theme;
-        if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        } else if (theme === 'light') {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-        } else if (theme === 'system') {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark');
-                document.documentElement.classList.remove('light');
-            } else {
-                document.documentElement.classList.add('light');
-                document.documentElement.classList.remove('dark');
-            }
-        }
-    }, [currentUser?.settings?.theme]);
-
-    const loadAllData = async (fetchedUser?: User | null) => {
-        try {
-            const [usersData, chatsData, postsData, statusesData, callsData] = await Promise.all([
-                usersAPI.getAll().catch(() => []),
-                chatsAPI.getAll().catch(() => []),
-                postsAPI.getAll().catch(() => []),
-                statusesAPI.getAll().catch(() => []),
-                callsAPI.getAll().catch(() => [])
-            ]);
-
-            setUsers(usersData);
-            
-            // Merge chatsData with existing messages in state
-            setChats(prev => {
-                return chatsData.map((newChat: Chat) => {
-                    const existingChat = prev.find(c => c.id === newChat.id);
-                    if (existingChat && existingChat.messages.length > 0) {
-                        return { ...newChat, messages: existingChat.messages };
-                    }
-                    return newChat;
-                });
-            });
-
-            setPosts(postsData);
-            setStatuses(statusesData);
-            console.log('Fetching calls data:', callsData);
-            setCalls(callsData);
-
-            // Load admin data if admin (use fetchedUser if provided, else fall back to state)
-            const role = fetchedUser?.role || currentUser?.role;
-            if (role === 'admin') {
-                const [adsData, reportsData, settingsData] = await Promise.all([
-                    adminAPI.getAds().catch(() => []),
-                    adminAPI.getReports().catch(() => []),
-                    adminAPI.getSettings().catch(() => ({ maintenanceMode: false }))
-                ]);
-                setAds(adsData);
-                setReports(reportsData);
-                setSystemSettings(settingsData);
-            } else {
-                // Fetch public active ads for regular users
-                try {
-                    const activeAds = await adsAPI.getActive();
-                    setAds(activeAds);
-                } catch (e) {
-                    console.error('Failed to fetch ads:', e);
-                }
-            }
-        } catch (err) {
-            console.error('Error loading data:', err);
-            setError('Failed to load data');
-        }
-    };
-
-    const refreshData = async () => {
-        await loadAllData();
-    };
-
-    // ========== AUTH ==========
-    const login = async (email: string, password: string): Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }> => {
-        try {
-            setLoading(true);
-            setError(null);
-            const { user, token } = await authAPI.login(email, password);
-
-            // Store token for API calls
-            localStorage.setItem('token', token);
-
-            setCurrentUser(user);
-            console.log('✅ User logged in:', user.name);
-
-            // Load all data immediately after login
-            await loadAllData(user);
-
-            // Subscribe to push notifications (non-blocking)
-            try {
-                const { subscribeToPushNotifications } = await import('../../lib/pushNotifications');
-                await subscribeToPushNotifications(user.id, token);
-            } catch (err) {
-                console.warn('Failed to subscribe to push notifications:', err);
-                // Don't block login if push notifications fail
-            }
-
-            return {
-                success: true,
-                isAdminPanel: user.role === 'admin'
-            };
-        } catch (err: any) {
-            console.error('Login error:', err);
-            setError(err.message);
-            // Return the specific error message to the caller
-            return { success: false, error: err.message || err.response?.data?.message };
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const googleLogin = async (dataOrCredential: string | { googleId: string; email: string; name: string; avatar: string }): Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }> => {
-        try {
-            const response = await authAPI.googleLogin(dataOrCredential);
-            setCurrentUser(response.user);
-            await loadAllData();
-            return { success: true, isAdminPanel: response.isAdminPanel || response.user?.isAdminPanel };
-        } catch (err: any) {
-            console.error('Google Login error:', err);
-            setError(err.message);
-            return { success: false, error: err.message };
-        }
-    };
-
-    const signup = async (userData: any): Promise<boolean> => {
-        try {
-            const response = await authAPI.signup(userData);
-            setCurrentUser(response.user);
-            await loadAllData();
-            return true;
-        } catch (err: any) {
-            console.error('Signup error:', err);
-            setError(err.message);
-            return false;
-        }
-    };
-
-    const logout = async () => {
-        try {
-            await authAPI.logout();
-        } finally {
-            setCurrentUser(null);
-            setChats([]);
-            setActiveChatIdInternal(null);
-        }
-    };
-
-    const updateProfilePhoto = async (url: string) => {
-        if (!currentUser) return;
-        try {
-            await usersAPI.update(currentUser.id, { avatar: url });
-            setCurrentUser({ ...currentUser, avatar: url });
-        } catch (err) {
-            console.error('Update photo error:', err);
-        }
-    };
-
-    const updateSettings = async (settings: Partial<UserSettings>) => {
-        if (!currentUser) return;
-        try {
-            await usersAPI.updateSettings(currentUser.id, settings);
-            setCurrentUser({
-                ...currentUser,
-                settings: { ...currentUser.settings, ...settings } as UserSettings
-            });
-        } catch (err) {
-            console.error('Update settings error:', err);
-        }
-    };
-
-    // ========== CHAT ==========
-    const markChatAsRead = async (chatId: string) => {
-        const chat = chats.find(c => c.id === chatId);
-        if (!chat) return;
-
-        // Check if there are actually unread messages or messages not marked as read
-        const unreadMessages = chat.messages.filter(m => m.senderId !== currentUser?.id && m.status !== 'read');
-
-        if (unreadMessages.length === 0 && chat.unreadCount === 0) return;
-
-        // Update local state immediately
-        setChats(prev => prev.map(c =>
-            c.id === chatId ? {
-                ...c,
-                unreadCount: 0,
-                messages: c.messages.map(m =>
-                    m.senderId !== currentUser?.id ? { ...m, status: 'read' } : m
-                )
-            } : c
-        ));
-
-        // Call API to mark as read on server
-        try {
-            await chatsAPI.markAsRead(chatId);
-
-            // Emit socket event for each unread message to update sender's UI
-            unreadMessages.forEach(msg => {
-                socket?.emit('message:read', {
-                    chatId,
-                    messageId: msg.id,
-                    senderId: msg.senderId
-                });
-            });
-        } catch (err) {
-            console.error('Failed to mark as read:', err);
-        }
-    };
-
-    const setActiveChatId = async (chatId: string | null) => {
-        setActiveChatIdInternal(chatId);
-        // Mark messages as read when opening chat
-        if (chatId) {
-            await markChatAsRead(chatId);
-
-            // Fetch messages if they aren't loaded yet
-            const currentChat = chats.find(c => c.id === chatId);
-            if (currentChat && currentChat.messages.length === 0 && !loadingMessages.has(chatId)) {
-                try {
-                    setLoadingMessages(prev => new Set(prev).add(chatId));
-                    console.log('📬 VocaContext: Fetching messages for active chat...', chatId);
-                    const messages = await chatsAPI.getMessages(chatId);
-                    setChats(prev => prev.map(c => 
-                        c.id === chatId ? { ...c, messages } : c
-                    ));
-                } catch (err) {
-                    console.error('Failed to fetch messages for chat:', err);
-                } finally {
-                    setLoadingMessages(prev => {
-                        const next = new Set(prev);
-                        next.delete(chatId);
-                        return next;
-                    });
-                }
-            }
-        }
-    };
-
-    const sendMessage = useCallback(async (chatId: string, content: string, type: 'text' | 'image' | 'voice' | 'video' | 'doc' | 'call' | 'poll' | 'event' | 'audio' | 'contact' | 'location' = 'text', mediaUrl?: string, duration?: string, replyToId?: string): Promise<Message | undefined> => {
-        if (!currentUser) return undefined;
-        try {
-            // Optimistic update
-            const tempId = 'temp-' + Date.now();
-            const newMessage: Message = {
-                id: tempId,
-                senderId: currentUser!.id,
-                content,
-                type,
-                timestamp: new Date().toISOString(),
-                status: 'pending',
-                mediaUrl,
-                duration,
-                replyToId
-            };
-
-            setChats(prev => prev.map(chat => {
-                if (chat.id === chatId) {
-                    return {
-                        ...chat,
-                        messages: [...chat.messages, newMessage]
-                    };
-                }
-                return chat;
-            }));
-
-            const message = await chatsAPI.sendMessage(chatId, content, type, mediaUrl, replyToId);
-
-            // Update local state with actual message ID and status
-            setChats(prev => prev.map(chat => {
-                if (chat.id === chatId) {
-                    return {
-                        ...chat,
-                        messages: chat.messages.map(m =>
-                            m.id === tempId ? message : m
-                        )
-                    };
-                }
-                return chat;
-            }));
-
-            // Return message so caller can emit socket event
-            return message;
-
-        } catch (err) {
-            console.error('Send message error:', err);
-            return undefined;
-        }
-    }, [currentUser, chats]);
-
-    const deleteMessage = async (chatId: string, messageId: string, forEveryone: boolean) => {
-        try {
-            await chatsAPI.deleteMessage(chatId, messageId, forEveryone);
-
-            setChats(prev => prev.map(chat => {
-                if (chat.id === chatId) {
-                    return {
-                        ...chat,
-                        messages: chat.messages.map(m =>
-                            m.id === messageId ? { ...m, isDeleted: true, content: 'This message was deleted' } : m
-                        )
-                    };
-                }
-                return chat;
-            }));
-        } catch (err) {
-            console.error('Delete message error:', err);
-        }
-    };
-
-    const starMessage = async (chatId: string, messageId: string) => {
-        if (!currentUser) return;
-
-        // Optimistic update
-        setChats(prev => prev.map(chat => {
-            if (chat.id === chatId) {
-                return {
-                    ...chat,
-                    messages: chat.messages.map(m => {
-                        if (m.id === messageId) {
-                            const isStarred = m.starredBy?.includes(currentUser.id);
-                            const newStarredBy = isStarred
-                                ? m.starredBy?.filter(id => id !== currentUser.id)
-                                : [...(m.starredBy || []), currentUser.id];
-                            return { ...m, starredBy: newStarredBy };
-                        }
-                        return m;
-                    })
-                };
-            }
-            return chat;
-        }));
-
-        try {
-            await chatsAPI.starMessage(chatId, messageId);
-        } catch (err) {
-            console.error('Star message error:', err);
-            // Revert changes if needed (omitted for brevity, but good practice)
-        }
-    };
-
-    const editMessage = async (chatId: string, messageId: string, newContent: string) => {
-        try {
-            await chatsAPI.editMessage(chatId, messageId, newContent);
-
-            setChats(prev => prev.map(chat => {
-                if (chat.id === chatId) {
-                    return {
-                        ...chat,
-                        messages: chat.messages.map(m =>
-                            m.id === messageId ? { ...m, content: newContent, isEdited: true } : m
-                        )
-                    };
-                }
-                return chat;
-            }));
-        } catch (err) {
-            console.error('Edit message error:', err);
-        }
-    };
-
-    const createChat = async (participantId: string) => {
-        try {
-            const chat = await chatsAPI.create(participantId);
-            setChats(prev => {
-                const exists = prev.find(c => c.id === chat.id);
-                if (exists) return prev;
-                return [...prev, chat];
-            });
-            setActiveChatIdInternal(chat.id);
-            return chat;
-        } catch (err) {
-            console.error('Create chat error:', err);
-            return undefined;
-        }
-    };
-
-    const createGroupChat = async (name: string, participantIds: string[], image?: string) => {
-        try {
-            const chat = await chatsAPI.createGroup(name, participantIds, image);
-            setChats(prev => [...prev, chat]);
-            setActiveChatIdInternal(chat.id);
-        } catch (err) {
-            console.error('Create group error:', err);
-        }
-    };
-
-    const toggleArchiveChat = async (chatId: string) => {
-        try {
-            const result = await chatsAPI.archive(chatId);
-            // Update local user's archived chats
-            if (currentUser) {
-                const archivedChats = currentUser.archivedChats || [];
-                if (result.archived) {
-                    setCurrentUser({ ...currentUser, archivedChats: [...archivedChats, chatId] });
-                } else {
-                    setCurrentUser({ ...currentUser, archivedChats: archivedChats.filter(id => id !== chatId) });
-                }
-            }
-        } catch (err) {
-            console.error('Archive chat error:', err);
-        }
-    };
-
-    const toggleFavoriteContact = async (contactId: string) => {
-        if (!currentUser) return;
-        try {
-            const isFavorite = currentUser.favorites?.includes(contactId);
-            if (isFavorite) {
-                await usersAPI.removeFromFavorites(contactId);
-                setCurrentUser({
-                    ...currentUser,
-                    favorites: currentUser.favorites?.filter(id => id !== contactId)
-                });
-            } else {
-                await usersAPI.addToFavorites(contactId);
-                setCurrentUser({
-                    ...currentUser,
-                    favorites: [...(currentUser.favorites || []), contactId]
-                });
-            }
-        } catch (err) {
-            console.error('Toggle favorite error:', err);
-        }
-    };
-
-    // Socket message handlers - called by SocketContext when messages are received
-    const handleIncomingMessage = async (chatId: string, message: Message) => {
-        console.log('📨 VocaContext: Handling incoming message', { chatId, messageId: message.id, type: message.type });
-
-        // Use ref to get current chats (fixes stale closure issue)
-        const currentChats = chatsRef.current;
-        const chatExists = currentChats.some(c => c.id === chatId);
-
-        if (!chatExists) {
-            // Chat not in local state, fetch all chats to get the new one
-            console.log('📨 VocaContext: Chat not found locally, fetching from server...');
-            try {
-                const updatedChats = await chatsAPI.getAll();
-                setChats(updatedChats);
-                return; // The fetched chats will include the new message
-            } catch (err) {
-                console.error('Failed to fetch chats:', err);
-                return;
-            }
-        }
-
-        setChats(prev => prev.map(chat => {
-            if (chat.id === chatId) {
-                // Check if message already exists (prevent duplicates)
-                if (chat.messages.some(m => m.id === message.id)) {
-                    return chat;
-                }
-                return {
-                    ...chat,
-                    messages: [...chat.messages, message],
-                    unreadCount: chat.id === activeChatId ? 0 : chat.unreadCount + 1,
-                    lastMessage: message
-                };
-            }
-            return chat;
-        }));
-    };
-
-    const handleMessageDelivered = (chatId: string, messageId: string) => {
-        console.log('✓ VocaContext: Message delivered', { chatId, messageId });
-        setChats(prev => prev.map(chat =>
-            chat.id === chatId ? {
-                ...chat,
-                messages: chat.messages.map(m =>
-                    m.id === messageId ? { ...m, status: 'delivered' } : m
-                )
-            } : chat
-        ));
-    };
-
-    const handleMessageRead = (chatId: string, messageId: string) => {
-        console.log('👁️ VocaContext: Message read', { chatId, messageId });
-        setChats(prev => prev.map(chat =>
-            chat.id === chatId ? {
-                ...chat,
-                messages: chat.messages.map(m =>
-                    m.id === messageId ? { ...m, status: 'read' } : m
-                )
-            } : chat
-        ));
-    };
-
-    // Handle remote message deletion (delete for everyone)
-    const handleMessageDeleted = (chatId: string, messageId: string) => {
-        console.log('🗑️ VocaContext: Message deleted remotely', { chatId, messageId });
-        setChats(prev => prev.map(chat =>
-            chat.id === chatId ? {
-                ...chat,
-                messages: chat.messages.map(m =>
-                    m.id === messageId ? { ...m, isDeleted: true, content: 'This message was deleted' } : m
-                )
-            } : chat
-        ));
-    };
-
-    // Handle remote message edit
-    const handleMessageEdited = (chatId: string, messageId: string, newContent: string) => {
-        console.log('✏️ VocaContext: Message edited remotely', { chatId, messageId, newContent });
-        setChats(prev => prev.map(chat =>
-            chat.id === chatId ? {
-                ...chat,
-                messages: chat.messages.map(m =>
-                    m.id === messageId ? { ...m, content: newContent, isEdited: true } : m
-                )
-            } : chat
-        ));
-    };
-
-    const deleteChat = async (chatId: string) => {
-        try {
-            await chatsAPI.delete(chatId);
-            setChats(prev => prev.filter(c => c.id !== chatId));
-            if (activeChatId === chatId) {
-                setActiveChatIdInternal(null);
-            }
-        } catch (err) {
-            console.error('Delete chat error:', err);
-        }
-    };
-
-    // ========== CALLS ==========
-    const startCall = (participantId: string, type: 'voice' | 'video', fallbackParticipant?: User) => {
-        const participant = users.find(u => u.id === participantId) || fallbackParticipant;
-        if (participant) {
-            setActiveCall({ type, isIncoming: false, participant });
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(title, options).catch(console.error);
+          });
         } else {
-            console.error("Could not find participant for call:", participantId);
-            // Optional: Show toast error here
+          try {
+            new Notification(title, options);
+          } catch (e) {
+            console.error("Call Notification constructor failed:", e);
+          }
         }
-    };
+      }
 
-    const endCall = async (duration?: string, status?: 'missed' | 'completed', isRemote = false) => {
-        console.log('📞 VocaContext: endCall called', { duration, status, isRemote, hasActiveCall: !!activeCall, activeCallParticipant: activeCall?.participant?.name });
+      setActiveCall({
+        type: data.callType,
+        isIncoming: true,
+        participant,
+        offer: data.offer,
+      });
+    } else {
+      console.error(
+        "📞 VocaContext: FAILED to start call - Call participant not found!",
+        { from: data.from }
+      );
+    }
+  };
 
-        if (activeCall && activeCall.participant && currentUser) {
-            // Determine call direction and status
-            const isIncomingCall = activeCall.isIncoming;
-            const isMissedCall = status === 'missed';
-            const callType = activeCall.type;
+  // Load initial data on mount
+  useEffect(() => {
+    const initializeApp = async () => {
+      if (authAPI.isAuthenticated()) {
+        try {
+          const user = await authAPI.getCurrentUser();
+          setCurrentUser(user);
+          await loadAllData(user);
 
-            const newCall: Call = {
-                id: `call_${Date.now()}`,
-                type: callType,
-                caller: activeCall.participant!, // Always store the other participant as the 'contact' for the call log
-                timestamp: new Date().toISOString(),
-                duration: duration || '0:00',
-                status: status || 'completed',
-                direction: isIncomingCall ? 'incoming' : 'outgoing'
-            };
-
-            // Add to calls list
-            setCalls(prev => [newCall, ...prev]);
-
-            // Find or create chat with participant
-            let chat = chats.find((c: Chat) =>
-                !c.isGroup && c.participants.some((p: User) => p.id === activeCall.participant!.id)
-            );
-
-            if (!chat) {
-                // Create new chat if doesn't exist
-                try {
-                    await createChat(activeCall.participant.id);
-                    // Refresh chats to get the new chat
-                    const updatedChats = await chatsAPI.getAll();
-                    setChats(updatedChats);
-                    chat = updatedChats.find((c: Chat) =>
-                        !c.isGroup && c.participants.some((p: User) => p.id === activeCall.participant!.id)
-                    );
-                } catch (error) {
-                    console.error('Error creating chat for call:', error);
-                }
+          // Subscribe to push notifications on session restore
+          try {
+            const token = localStorage.getItem("token") || "";
+            if (token) {
+              const { subscribeToPushNotifications } = await import(
+                "../../lib/pushNotifications"
+              );
+              await subscribeToPushNotifications(user.id, token);
             }
-
-            // Save call to backend
-            try {
-                // Determine if WE were the caller or receiver for the API record
-                // If isIncomingCall is true, we received it.
-                // If isIncomingCall is false, we initiated it.
-                // The API needs 'participantId' (the OTHER person).
-
-                const participantId = activeCall.participant.id;
-                console.log('💾 Saving call to backend...', {
-                    participantId,
-                    callType,
-                    status,
-                    duration,
-                    isIncomingCall
-                });
-
-                await callsAPI.create(
-                    participantId,
-                    callType,
-                    status || 'completed',
-                    duration,
-                    isIncomingCall
-                );
-
-                console.log('✅ Call saved to backend successfully!');
-
-                // Refresh calls list from backend to ensure consistency
-                const updatedCalls = await callsAPI.getAll();
-                setCalls(updatedCalls);
-                console.log('✅ Call history refreshed from backend:', updatedCalls.length, 'total calls');
-
-
-            } catch (error) {
-                console.error('❌ Error saving call history to backend:', error);
-                console.log('⚠️ This means Render backend is NOT deployed with ObjectId fix!');
-                console.log('💾 Using fallback: Adding call to local state only (will not persist after refresh)');
-
-                // Fallback: Add locally if backend fails
-                const newCall: Call = {
-                    id: `call_${Date.now()}`,
-                    type: callType,
-                    caller: activeCall.participant!,
-                    timestamp: new Date().toISOString(),
-                    duration: duration || '0:00',
-                    status: status || 'completed',
-                    direction: isIncomingCall ? 'incoming' : 'outgoing'
-                };
-                setCalls(prev => [newCall, ...prev]);
-                console.log('✅ Call added to local state:', newCall);
-            }
-
-            // Add call message to chat ONLY if ending locally (not remote)
-            //This prevents duplicate messages when both users end the call
-            if (chat && !isRemote) {
-                console.log('📝 Adding call message to chat (local end)');
-                const callIcon = callType === 'video' ? '📹' : '📞';
-                let callLabel = '';
-
-                if (isMissedCall) {
-                    callLabel = isIncomingCall ? 'Missed' : 'Cancelled';
-                } else {
-                    callLabel = isIncomingCall ? 'Incoming' : 'Outgoing';
-                }
-
-                const durationText = duration && duration !== '0:00' ? ` (${duration})` : '';
-                const content = `${callIcon} ${callLabel} ${callType === 'video' ? 'video' : 'voice'} call${durationText}`;
-
-                const callMessage: Message = {
-                    id: `msg_${Date.now()}`,
-                    senderId: currentUser.id,
-                    content,
-                    type: 'call',
-                    timestamp: new Date().toISOString(),
-                    status: 'read',
-                    duration: duration
-                };
-
-                setChats(prev => prev.map(c =>
-                    c.id === chat!.id
-                        ? { ...c, messages: [...c.messages, callMessage] }
-                        : c
-                ));
-
-                // Also send via socket for real-time update
-                try {
-                    await sendMessage(chat.id, callMessage.content, callMessage.type);
-                } catch (error) {
-                    console.error('Error sending call message:', error);
-                }
-            } else if (isRemote) {
-                console.log('⏩ Skipping call message creation (remote end - other user will create it)');
-            }
-        }
-        console.log('📞 VocaContext: Clearing activeCall');
-        setActiveCall(null);
-    };
-
-    // Fetch calls on mount (or when authenticated)
-    const fetchCalls = useCallback(async () => {
-        if (!currentUser) return;
-        try {
-            const data = await callsAPI.getAll();
-            setCalls(data);
-        } catch (error) {
-            console.error('Error fetching calls:', error);
-        }
-    }, [currentUser]);
-
-    useEffect(() => {
-        fetchCalls();
-
-        // Listen for real-time call history updates
-        if (socket) {
-            const handleCallHistoryUpdate = () => {
-                console.log('📞 Call history updated, refreshing...');
-                fetchCalls();
-            };
-
-            const handleNewStatus = (newStatus: StatusUpdate) => {
-                console.log('🌟 New status received:', newStatus.id);
-                // Avoid using stale state by using functional update
-                setStatuses(prev => {
-                    // Avoid duplicates
-                    if (prev.some(s => s.id === newStatus.id)) return prev;
-                    return [newStatus, ...prev];
-                });
-            };
-
-            const handleNewPost = (newPost: Post) => {
-                console.log('📝 New post received:', newPost.id);
-                // Avoid using stale state by using functional update
-                setPosts(prev => {
-                    // Avoid duplicates
-                    if (prev.some(p => p.id === newPost.id)) return prev;
-                    return [newPost, ...prev];
-                });
-            };
-
-            socket.on('call:history-updated', handleCallHistoryUpdate);
-            socket.on('status:new', handleNewStatus);
-            socket.on('post:new', handleNewPost);
-
-            return () => {
-                socket.off('call:history-updated', handleCallHistoryUpdate);
-                socket.off('status:new', handleNewStatus);
-                socket.off('post:new', handleNewPost);
-            };
-        }
-    }, [fetchCalls, socket]);
-
-    // ========== STATUS ==========
-    const createStatus = async (mediaUrl: string, type: 'text' | 'image', caption?: string) => {
-        try {
-            const status = await statusesAPI.create(mediaUrl, type, caption);
-            setStatuses(prev => [status, ...prev]);
+          } catch (err) {
+            console.warn("Failed to subscribe to push notifications on restore:", err);
+          }
         } catch (err) {
-            console.error('Create status error:', err);
+          console.error("Auth check failed:", err);
+          authAPI.removeToken();
         }
+      }
+      setLoading(false);
     };
+    initializeApp();
+  }, []);
 
-    const deleteStatus = async (statusId: string) => {
-        try {
-            await statusesAPI.delete(statusId);
-            setStatuses(prev => prev.filter(s => s.id !== statusId));
-        } catch (err) {
-            console.error('Delete status error:', err);
-            throw err;
-        }
-    };
+  // Apply theme
+  useEffect(() => {
+    const theme = currentUser?.settings?.theme;
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else if (theme === "light") {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    } else if (theme === "system") {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      } else {
+        document.documentElement.classList.add("light");
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  }, [currentUser?.settings?.theme]);
 
-    // ========== POSTS ==========
-    const createPost = async (content: string, imageUrl?: string) => {
-        try {
-            const post = await postsAPI.create(content, imageUrl);
-            setPosts(prev => [post, ...prev]);
-        } catch (err) {
-            console.error('Create post error:', err);
-        }
-    };
+  const loadAllData = async (fetchedUser?: User | null) => {
+    try {
+      const [usersData, chatsData, postsData, statusesData, callsData] =
+        await Promise.all([
+          usersAPI.getAll().catch(() => []),
+          chatsAPI.getAll().catch(() => []),
+          postsAPI.getAll().catch(() => []),
+          statusesAPI.getAll().catch(() => []),
+          callsAPI.getAll().catch(() => []),
+        ]);
 
-    const likePost = async (postId: string) => {
-        try {
-            await postsAPI.like(postId);
-            setPosts(prev => prev.map(p => {
-                if (p.id === postId) {
-                    const isLiked = p.likes.includes(currentUser?.id || '');
-                    return {
-                        ...p,
-                        likes: isLiked
-                            ? p.likes.filter(id => id !== currentUser?.id)
-                            : [...p.likes, currentUser?.id || '']
-                    };
-                }
-                return p;
-            }));
-        } catch (err) {
-            console.error('Like post error:', err);
-        }
-    };
+      setUsers(usersData);
 
-    const commentOnPost = async (postId: string, content: string) => {
-        try {
-            const comments = await postsAPI.comment(postId, content);
-            setPosts(prev => prev.map(p =>
-                p.id === postId ? { ...p, comments } : p
-            ));
-        } catch (err) {
-            console.error('Comment error:', err);
-        }
-    };
-
-    const sharePost = async (postId: string) => {
-        try {
-            await postsAPI.share(postId);
-            setPosts(prev => prev.map(p =>
-                p.id === postId ? { ...p, shares: p.shares + 1 } : p
-            ));
-        } catch (err) {
-            console.error('Share post error:', err);
-        }
-    };
-
-    const deletePost = async (postId: string) => {
-        try {
-            await postsAPI.delete(postId);
-            setPosts(prev => prev.filter(p => p.id !== postId));
-        } catch (err) {
-            console.error('Delete post error:', err);
-        }
-    };
-
-    // ========== USER MANAGEMENT ==========
-    const blockUser = async (userId: string) => {
-        try {
-            await usersAPI.block(userId);
-            if (currentUser) {
-                setCurrentUser({
-                    ...currentUser,
-                    blockedUsers: [...(currentUser.blockedUsers || []), userId]
-                });
-            }
-        } catch (err) {
-            console.error('Block user error:', err);
-        }
-    };
-
-    const unblockUser = async (userId: string) => {
-        try {
-            await usersAPI.unblock(userId);
-            if (currentUser) {
-                setCurrentUser({
-                    ...currentUser,
-                    blockedUsers: currentUser.blockedUsers?.filter(id => id !== userId)
-                });
-            }
-        } catch (err) {
-            console.error('Unblock user error:', err);
-        }
-    };
-
-    const updateUser = async (userId: string, data: Partial<User>) => {
-        try {
-            const updatedUser = await usersAPI.update(userId, data);
-            setUsers(prev => prev.map(u => u.id === userId ? updatedUser : u));
-            if (currentUser?.id === userId) {
-                setCurrentUser(updatedUser);
-            }
-        } catch (err) {
-            console.error('Update user error:', err);
-        }
-    };
-
-    const deleteUser = async (userId: string) => {
-        try {
-            await usersAPI.delete(userId);
-            setUsers(prev => prev.filter(u => u.id !== userId));
-        } catch (err) {
-            console.error('Delete user error:', err);
-        }
-    };
-
-    const banUser = async (userId: string) => {
-        try {
-            await usersAPI.ban(userId);
-            setUsers(prev => prev.map(u =>
-                u.id === userId ? { ...u, isBanned: true } : u
-            ));
-        } catch (err) {
-            console.error('Ban user error:', err);
-        }
-    };
-
-    const unbanUser = async (userId: string) => {
-        try {
-            await usersAPI.unban(userId);
-            setUsers(prev => prev.map(u =>
-                u.id === userId ? { ...u, isBanned: false } : u
-            ));
-        } catch (err) {
-            console.error('Unban user error:', err);
-        }
-    };
-
-    const addUser = (user: Partial<User>) => {
-        // This would typically be admin creating a user
-        console.log('Add user not implemented for API', user);
-    };
-
-    // ========== ADMIN ==========
-    const createAd = async (ad: Omit<Advertisement, 'id' | 'clicks' | 'views'>) => {
-        try {
-            const newAd = await adminAPI.createAd(ad);
-            setAds(prev => [...prev, newAd]);
-        } catch (err) {
-            console.error('Create ad error:', err);
-        }
-    };
-
-    const updateAd = async (adId: string, updates: Partial<Advertisement>) => {
-        try {
-            const updatedAd = await adminAPI.updateAd(adId, updates);
-            setAds(prev => prev.map(a => a.id === adId ? updatedAd : a));
-        } catch (err) {
-            console.error('Update ad error:', err);
-        }
-    };
-
-    const deleteAd = async (adId: string) => {
-        try {
-            await adminAPI.deleteAd(adId);
-            setAds(prev => prev.filter(a => a.id !== adId));
-        } catch (err) {
-            console.error('Delete ad error:', err);
-        }
-    };
-
-    const toggleAd = async (adId: string) => {
-        try {
-            const updatedAd = await adminAPI.toggleAd(adId);
-            setAds(prev => prev.map(a => a.id === adId ? updatedAd : a));
-        } catch (err) {
-            console.error('Toggle ad error:', err);
-        }
-    };
-
-    const incrementAdClick = (adId: string) => {
-        setAds(prev => prev.map(a =>
-            a.id === adId ? { ...a, clicks: a.clicks + 1 } : a
-        ));
-    };
-
-    const incrementAdView = (adId: string) => {
-        setAds(prev => prev.map(a =>
-            a.id === adId ? { ...a, views: a.views + 1 } : a
-        ));
-    };
-
-    const createReport = (report: Omit<Report, 'id' | 'timestamp' | 'status'>) => {
-        const newReport: Report = {
-            ...report,
-            id: `report_${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            status: 'pending'
-        };
-        setReports(prev => [...prev, newReport]);
-    };
-
-    const resolveReport = async (reportId: string, status: 'resolved' | 'dismissed') => {
-        try {
-            await adminAPI.updateReport(reportId, status);
-            setReports(prev => prev.map(r =>
-                r.id === reportId ? { ...r, status } : r
-            ));
-        } catch (err) {
-            console.error('Resolve report error:', err);
-        }
-    };
-
-    const sendBroadcast = async (message: string) => {
-        try {
-            await adminAPI.sendBroadcast(message);
-            // Refresh chats to show the broadcast
-            const chatsData = await chatsAPI.getAll();
-            setChats(chatsData);
-        } catch (err) {
-            console.error('Broadcast error:', err);
-        }
-    };
-
-    const updateSystemSettings = async (settings: Partial<{ maintenanceMode: boolean; fileUploadLimitMB: number }>) => {
-        try {
-            const updated = await adminAPI.updateSettings(settings);
-            setSystemSettings(updated);
-        } catch (err) {
-            console.error('Update settings error:', err);
-        }
-    };
-
-    // ========== SEARCH HELPERS ==========
-    const searchMessages = (query: string, chatId?: string): Message[] => {
-        const lowerQuery = query.toLowerCase();
-        let messages: Message[] = [];
-
-        const targetChats = chatId ? chats.filter(c => c.id === chatId) : chats;
-        targetChats.forEach(chat => {
-            chat.messages.forEach(msg => {
-                if (msg.content.toLowerCase().includes(lowerQuery)) {
-                    messages.push(msg);
-                }
-            });
+      // Merge chatsData with existing messages in state
+      setChats((prev) => {
+        return chatsData.map((newChat: Chat) => {
+          const existingChat = prev.find((c) => c.id === newChat.id);
+          if (existingChat && existingChat.messages.length > 0) {
+            return { ...newChat, messages: existingChat.messages };
+          }
+          return newChat;
         });
+      });
 
-        return messages;
-    };
+      setPosts(postsData);
+      setStatuses(statusesData);
+      console.log("Fetching calls data:", callsData);
+      setCalls(callsData);
 
-    const getStarredMessages = (): { message: Message, chat: Chat }[] => {
-        const starred: { message: Message, chat: Chat }[] = [];
-        chats.forEach(chat => {
-            chat.messages.forEach(msg => {
-                if (msg.starredBy?.includes(currentUser?.id || '')) {
-                    starred.push({ message: msg, chat });
-                }
-            });
-        });
-        return starred;
-    };
+      // Load admin data if admin (use fetchedUser if provided, else fall back to state)
+      const role = fetchedUser?.role || currentUser?.role;
+      if (role === "admin") {
+        const [adsData, reportsData, settingsData] = await Promise.all([
+          adminAPI.getAds().catch(() => []),
+          adminAPI.getReports().catch(() => []),
+          adminAPI.getSettings().catch(() => ({ maintenanceMode: false })),
+        ]);
+        setAds(adsData);
+        setReports(reportsData);
+        setSystemSettings(settingsData);
+      } else {
+        // Fetch public active ads for regular users
+        try {
+          const activeAds = await adsAPI.getActive();
+          setAds(activeAds);
+        } catch (e) {
+          console.error("Failed to fetch ads:", e);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading data:", err);
+      setError("Failed to load data");
+    }
+  };
 
-    const value: VocaContextType = {
-        currentUser,
-        users,
-        chats,
-        activeChatId,
-        ads,
-        reports,
-        statuses,
-        calls,
-        loading,
-        loadingMessages,
-        error,
+  const refreshData = async () => {
+    await loadAllData();
+  };
 
-        login,
-        googleLogin,
-        signup,
-        logout,
-        updateProfilePhoto,
-        updateSettings,
+  // ========== AUTH ==========
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }> => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { user, token } = await authAPI.login(email, password);
 
-        sendMessage,
-        votePoll: async (chatId: string, messageId: string, optionId: string) => {
-            // Optimistic Update
-            setChats(prev => prev.map(chat => {
-                if (chat.id === chatId) {
-                    return {
-                        ...chat,
-                        messages: chat.messages.map(m => {
-                            if (m.id === messageId) {
-                                // Parse existing content
-                                try {
-                                    const pollData = JSON.parse(m.content);
-                                    const userId = currentUser!.id;
-                                    const optionIndex = pollData.options.findIndex((o: any) => o.id === optionId);
+      // Store token for API calls
+      localStorage.setItem("token", token);
 
-                                    if (optionIndex !== -1) {
-                                        const option = pollData.options[optionIndex];
-                                        const hasVoted = option.voterIds.includes(userId);
+      setCurrentUser(user);
+      console.log("✅ User logged in:", user.name);
 
-                                        if (hasVoted) {
-                                            option.voterIds = option.voterIds.filter((id: string) => id !== userId);
-                                        } else {
-                                            if (!pollData.allowMultiple) {
-                                                pollData.options.forEach((opt: any) => {
-                                                    opt.voterIds = opt.voterIds.filter((id: string) => id !== userId);
-                                                });
-                                            }
-                                            option.voterIds.push(userId);
-                                        }
-                                        return { ...m, content: JSON.stringify(pollData) };
-                                    }
-                                } catch (e) { }
-                            }
-                            return m;
-                        })
-                    };
-                }
-                return chat;
-            }));
+      // Load all data immediately after login
+      await loadAllData(user);
 
-            // API Call
-            await chatsAPI.votePoll(chatId, messageId, optionId);
-        },
-        deleteMessage,
-        starMessage,
-        setActiveChatId,
-        activeCall,
-        startCall,
-        endCall,
-        createChat,
-        createGroupChat,
-        toggleArchiveChat,
-        toggleFavoriteContact,
-        markChatAsRead,
-        handleIncomingMessage,
-        handleMessageDelivered,
-        handleMessageRead,
-        handleMessageDeleted,
-        handleMessageEdited,
-        handleIncomingCall,
+      // Subscribe to push notifications (non-blocking)
+      try {
+        const { subscribeToPushNotifications } = await import(
+          "../../lib/pushNotifications"
+        );
+        await subscribeToPushNotifications(user.id, token);
+      } catch (err) {
+        console.warn("Failed to subscribe to push notifications:", err);
+        // Don't block login if push notifications fail
+      }
 
-        createStatus,
-        deleteStatus,
-        searchMessages,
-        editMessage,
-        getStarredMessages,
+      return {
+        success: true,
+        isAdminPanel: user.role === "admin",
+      };
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err.message);
+      // Return the specific error message to the caller
+      return {
+        success: false,
+        error: err.message || err.response?.data?.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        addUser,
-        deleteUser,
-        banUser,
-        unbanUser,
-        updateUser,
-        blockUser,
-        unblockUser,
-        deleteChat,
+  const googleLogin = async (
+    dataOrCredential:
+      | string
+      | { googleId: string; email: string; name: string; avatar: string }
+  ): Promise<{ success: boolean; isAdminPanel?: boolean; error?: string }> => {
+    try {
+      const response = await authAPI.googleLogin(dataOrCredential);
+      setCurrentUser(response.user);
+      await loadAllData();
+      return {
+        success: true,
+        isAdminPanel: response.isAdminPanel || response.user?.isAdminPanel,
+      };
+    } catch (err: any) {
+      console.error("Google Login error:", err);
+      setError(err.message);
+      return { success: false, error: err.message };
+    }
+  };
 
-        createAd,
-        updateAd,
-        deleteAd,
-        toggleAd,
-        incrementAdClick,
-        incrementAdView,
+  const signup = async (userData: any): Promise<boolean> => {
+    try {
+      const response = await authAPI.signup(userData);
+      setCurrentUser(response.user);
+      await loadAllData();
+      return true;
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setError(err.message);
+      return false;
+    }
+  };
 
-        createReport,
-        resolveReport,
-        sendBroadcast,
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } finally {
+      setCurrentUser(null);
+      setChats([]);
+      setActiveChatIdInternal(null);
+    }
+  };
 
-        posts,
-        createPost,
-        likePost,
-        commentOnPost,
-        sharePost,
-        deletePost,
+  const updateProfilePhoto = async (url: string) => {
+    if (!currentUser) return;
+    try {
+      await usersAPI.update(currentUser.id, { avatar: url });
+      setCurrentUser({ ...currentUser, avatar: url });
+    } catch (err) {
+      console.error("Update photo error:", err);
+    }
+  };
 
-        systemSettings,
-        updateSystemSettings,
+  const updateSettings = async (settings: Partial<UserSettings>) => {
+    if (!currentUser) return;
+    try {
+      await usersAPI.updateSettings(currentUser.id, settings);
+      setCurrentUser({
+        ...currentUser,
+        settings: { ...currentUser.settings, ...settings } as UserSettings,
+      });
+    } catch (err) {
+      console.error("Update settings error:", err);
+    }
+  };
 
-        isAdmin,
-        refreshData
-    };
+  // ========== CHAT ==========
+  const markChatAsRead = async (chatId: string) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
 
-    return (
-        <VocaContext.Provider value={value}>
-            {children}
-        </VocaContext.Provider>
+    // Check if there are actually unread messages or messages not marked as read
+    const unreadMessages = chat.messages.filter(
+      (m) => m.senderId !== currentUser?.id && m.status !== "read"
     );
+
+    if (unreadMessages.length === 0 && chat.unreadCount === 0) return;
+
+    // Update local state immediately
+    setChats((prev) =>
+      prev.map((c) =>
+        c.id === chatId
+          ? {
+              ...c,
+              unreadCount: 0,
+              messages: c.messages.map((m) =>
+                m.senderId !== currentUser?.id ? { ...m, status: "read" } : m
+              ),
+            }
+          : c
+      )
+    );
+
+    // Call API to mark as read on server
+    try {
+      await chatsAPI.markAsRead(chatId);
+
+      // Emit socket event for each unread message to update sender's UI
+      unreadMessages.forEach((msg) => {
+        socket?.emit("message:read", {
+          chatId,
+          messageId: msg.id,
+          senderId: msg.senderId,
+        });
+      });
+    } catch (err) {
+      console.error("Failed to mark as read:", err);
+    }
+  };
+
+  const setActiveChatId = async (chatId: string | null) => {
+    setActiveChatIdInternal(chatId);
+    // Mark messages as read when opening chat
+    if (chatId) {
+      await markChatAsRead(chatId);
+
+      // Fetch messages if they aren't loaded yet
+      const currentChat = chats.find((c) => c.id === chatId);
+      if (
+        currentChat &&
+        currentChat.messages.length === 0 &&
+        !loadingMessages.has(chatId)
+      ) {
+        try {
+          setLoadingMessages((prev) => new Set(prev).add(chatId));
+          console.log(
+            "📬 VocaContext: Fetching messages for active chat...",
+            chatId
+          );
+          const messages = await chatsAPI.getMessages(chatId);
+          setChats((prev) =>
+            prev.map((c) => (c.id === chatId ? { ...c, messages } : c))
+          );
+        } catch (err) {
+          console.error("Failed to fetch messages for chat:", err);
+        } finally {
+          setLoadingMessages((prev) => {
+            const next = new Set(prev);
+            next.delete(chatId);
+            return next;
+          });
+        }
+      }
+    }
+  };
+
+  const sendMessage = useCallback(
+    async (
+      chatId: string,
+      content: string,
+      type:
+        | "text"
+        | "image"
+        | "voice"
+        | "video"
+        | "doc"
+        | "call"
+        | "poll"
+        | "event"
+        | "audio"
+        | "contact"
+        | "location" = "text",
+      mediaUrl?: string,
+      duration?: string,
+      replyToId?: string
+    ): Promise<Message | undefined> => {
+      if (!currentUser) return undefined;
+      try {
+        // Optimistic update
+        const tempId = "temp-" + Date.now();
+        const newMessage: Message = {
+          id: tempId,
+          senderId: currentUser!.id,
+          content,
+          type,
+          timestamp: new Date().toISOString(),
+          status: "pending",
+          mediaUrl,
+          duration,
+          replyToId,
+        };
+
+        setChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === chatId) {
+              return {
+                ...chat,
+                messages: [...chat.messages, newMessage],
+              };
+            }
+            return chat;
+          })
+        );
+
+        const message = await chatsAPI.sendMessage(
+          chatId,
+          content,
+          type,
+          mediaUrl,
+          replyToId
+        );
+
+        // Update local state with actual message ID and status
+        setChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === chatId) {
+              return {
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.id === tempId ? message : m
+                ),
+              };
+            }
+            return chat;
+          })
+        );
+
+        // Return message so caller can emit socket event
+        return message;
+      } catch (err) {
+        console.error("Send message error:", err);
+        return undefined;
+      }
+    },
+    [currentUser, chats]
+  );
+
+  const deleteMessage = async (
+    chatId: string,
+    messageId: string,
+    forEveryone: boolean
+  ) => {
+    try {
+      await chatsAPI.deleteMessage(chatId, messageId, forEveryone);
+
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === chatId) {
+            return {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId
+                  ? {
+                      ...m,
+                      isDeleted: true,
+                      content: "This message was deleted",
+                    }
+                  : m
+              ),
+            };
+          }
+          return chat;
+        })
+      );
+    } catch (err) {
+      console.error("Delete message error:", err);
+    }
+  };
+
+  const starMessage = async (chatId: string, messageId: string) => {
+    if (!currentUser) return;
+
+    // Optimistic update
+    setChats((prev) =>
+      prev.map((chat) => {
+        if (chat.id === chatId) {
+          return {
+            ...chat,
+            messages: chat.messages.map((m) => {
+              if (m.id === messageId) {
+                const isStarred = m.starredBy?.includes(currentUser.id);
+                const newStarredBy = isStarred
+                  ? m.starredBy?.filter((id: string) => id !== currentUser.id)
+                  : [...(m.starredBy || []), currentUser.id];
+                return { ...m, starredBy: newStarredBy };
+              }
+              return m;
+            }),
+          };
+        }
+        return chat;
+      })
+    );
+
+    try {
+      await chatsAPI.starMessage(chatId, messageId);
+    } catch (err) {
+      console.error("Star message error:", err);
+      // Revert changes if needed (omitted for brevity, but good practice)
+    }
+  };
+
+  const editMessage = async (
+    chatId: string,
+    messageId: string,
+    newContent: string
+  ) => {
+    try {
+      await chatsAPI.editMessage(chatId, messageId, newContent);
+
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === chatId) {
+            return {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId
+                  ? { ...m, content: newContent, isEdited: true }
+                  : m
+              ),
+            };
+          }
+          return chat;
+        })
+      );
+    } catch (err) {
+      console.error("Edit message error:", err);
+    }
+  };
+
+  const createChat = async (participantId: string) => {
+    try {
+      const chat = await chatsAPI.create(participantId);
+      setChats((prev) => {
+        const exists = prev.find((c) => c.id === chat.id);
+        if (exists) return prev;
+        return [...prev, chat];
+      });
+      setActiveChatIdInternal(chat.id);
+      return chat;
+    } catch (err) {
+      console.error("Create chat error:", err);
+      return undefined;
+    }
+  };
+
+  const createGroupChat = async (
+    name: string,
+    participantIds: string[],
+    image?: string
+  ) => {
+    try {
+      const chat = await chatsAPI.createGroup(name, participantIds, image);
+      setChats((prev) => [...prev, chat]);
+      setActiveChatIdInternal(chat.id);
+    } catch (err) {
+      console.error("Create group error:", err);
+    }
+  };
+
+  const toggleArchiveChat = async (chatId: string) => {
+    try {
+      const result = await chatsAPI.archive(chatId);
+      // Update local user's archived chats
+      if (currentUser) {
+        const archivedChats = currentUser.archivedChats || [];
+        if (result.archived) {
+          setCurrentUser({
+            ...currentUser,
+            archivedChats: [...archivedChats, chatId],
+          });
+        } else {
+          setCurrentUser({
+            ...currentUser,
+            archivedChats: archivedChats.filter((id) => id !== chatId),
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Archive chat error:", err);
+    }
+  };
+
+  const toggleFavoriteContact = async (contactId: string) => {
+    if (!currentUser) return;
+    try {
+      const isFavorite = currentUser.favorites?.includes(contactId);
+      if (isFavorite) {
+        await usersAPI.removeFromFavorites(contactId);
+        setCurrentUser({
+          ...currentUser,
+          favorites: currentUser.favorites?.filter((id) => id !== contactId),
+        });
+      } else {
+        await usersAPI.addToFavorites(contactId);
+        setCurrentUser({
+          ...currentUser,
+          favorites: [...(currentUser.favorites || []), contactId],
+        });
+      }
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+    }
+  };
+
+  // Socket message handlers - called by SocketContext when messages are received
+  const handleIncomingMessage = async (chatId: string, message: Message) => {
+    console.log("📨 VocaContext: Handling incoming message", {
+      chatId,
+      messageId: message.id,
+      type: message.type,
+    });
+
+    // Use ref to get current chats (fixes stale closure issue)
+    const currentChats = chatsRef.current;
+
+    // Trigger background browser notification if tab is hidden
+    if (document.hidden && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      const chat = currentChats.find((c) => c.id === chatId);
+      const senderName = chat?.name || "Sunsan Messenger";
+      const bodyText = message.type === "text" ? message.content : `[${message.type}]`;
+      const options = {
+        body: bodyText,
+        icon: "/pwa-192x192.png",
+        badge: "/pwa-192x192.png",
+        tag: chatId,
+        renotify: true,
+        data: { url: `/chat/${chatId}` },
+      };
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(senderName, options).catch(console.error);
+        });
+      } else {
+        try {
+          new Notification(senderName, options);
+        } catch (e) {
+          console.error("Notification constructor failed:", e);
+        }
+      }
+    }
+
+    // Trigger Messenger Chat Head if user is not currently in this chat
+    if (message.senderId !== currentUser?.id && activeChatId !== chatId) {
+      setChatHeads((prev) => {
+        const exists = prev.some((ch) => ch.chatId === chatId);
+        if (exists) {
+          return prev.map((ch) =>
+            ch.chatId === chatId
+              ? { ...ch, unreadCount: ch.unreadCount + 1 }
+              : ch
+          );
+        }
+        const chat = currentChats.find((c) => c.id === chatId);
+        if (!chat) return prev;
+        const participant =
+          chat.participants.find((p) => p.id !== currentUser?.id) ||
+          chat.participants[0];
+        return [
+          ...prev,
+          { chatId, participant, unreadCount: 1 },
+        ];
+      });
+    }
+
+    const chatExists = currentChats.some((c) => c.id === chatId);
+
+    if (!chatExists) {
+      // Chat not in local state, fetch all chats to get the new one
+      console.log(
+        "📨 VocaContext: Chat not found locally, fetching from server..."
+      );
+      try {
+        const updatedChats = await chatsAPI.getAll();
+        setChats(updatedChats);
+        return; // The fetched chats will include the new message
+      } catch (err) {
+        console.error("Failed to fetch chats:", err);
+        return;
+      }
+    }
+
+    setChats((prev) =>
+      prev.map((chat) => {
+        if (chat.id === chatId) {
+          // Check if message already exists (prevent duplicates)
+          if (chat.messages.some((m) => m.id === message.id)) {
+            return chat;
+          }
+          return {
+            ...chat,
+            messages: [...chat.messages, message],
+            unreadCount: chat.id === activeChatId ? 0 : chat.unreadCount + 1,
+            lastMessage: message,
+          };
+        }
+        return chat;
+      })
+    );
+  };
+
+  const handleMessageDelivered = (chatId: string, messageId: string) => {
+    console.log("✓ VocaContext: Message delivered", { chatId, messageId });
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId ? { ...m, status: "delivered" } : m
+              ),
+            }
+          : chat
+      )
+    );
+  };
+
+  const handleMessageRead = (chatId: string, messageId: string) => {
+    console.log("👁️ VocaContext: Message read", { chatId, messageId });
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId ? { ...m, status: "read" } : m
+              ),
+            }
+          : chat
+      )
+    );
+  };
+
+  // Handle remote message deletion (delete for everyone)
+  const handleMessageDeleted = (chatId: string, messageId: string) => {
+    console.log("🗑️ VocaContext: Message deleted remotely", {
+      chatId,
+      messageId,
+    });
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId
+                  ? {
+                      ...m,
+                      isDeleted: true,
+                      content: "This message was deleted",
+                    }
+                  : m
+              ),
+            }
+          : chat
+      )
+    );
+  };
+
+  // Handle remote message edit
+  const handleMessageEdited = (
+    chatId: string,
+    messageId: string,
+    newContent: string
+  ) => {
+    console.log("✏️ VocaContext: Message edited remotely", {
+      chatId,
+      messageId,
+      newContent,
+    });
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: chat.messages.map((m) =>
+                m.id === messageId
+                  ? { ...m, content: newContent, isEdited: true }
+                  : m
+              ),
+            }
+          : chat
+      )
+    );
+  };
+
+  const deleteChat = async (chatId: string) => {
+    try {
+      await chatsAPI.delete(chatId);
+      setChats((prev) => prev.filter((c) => c.id !== chatId));
+      if (activeChatId === chatId) {
+        setActiveChatIdInternal(null);
+      }
+    } catch (err) {
+      console.error("Delete chat error:", err);
+    }
+  };
+
+  // ========== CALLS ==========
+  const startCall = (
+    participantId: string,
+    type: "voice" | "video",
+    fallbackParticipant?: User
+  ) => {
+    const participant =
+      users.find((u) => u.id === participantId) || fallbackParticipant;
+    if (participant) {
+      setActiveCall({ type, isIncoming: false, participant });
+    } else {
+      console.error("Could not find participant for call:", participantId);
+      // Optional: Show toast error here
+    }
+  };
+
+  const endCall = async (
+    duration?: string,
+    status?: "missed" | "completed",
+    isRemote = false
+  ) => {
+    console.log("📞 VocaContext: endCall called", {
+      duration,
+      status,
+      isRemote,
+      hasActiveCall: !!activeCall,
+      activeCallParticipant: activeCall?.participant?.name,
+    });
+
+    if (activeCall && activeCall.participant && currentUser) {
+      // Determine call direction and status
+      const isIncomingCall = activeCall.isIncoming;
+      const isMissedCall = status === "missed";
+      const callType = activeCall.type;
+
+      const newCall: Call = {
+        id: `call_${Date.now()}`,
+        type: callType,
+        caller: activeCall.participant!, // Always store the other participant as the 'contact' for the call log
+        timestamp: new Date().toISOString(),
+        duration: duration || "0:00",
+        status: status || "completed",
+        direction: isIncomingCall ? "incoming" : "outgoing",
+      };
+
+      // Add to calls list
+      setCalls((prev) => [newCall, ...prev]);
+
+      // Find or create chat with participant
+      let chat = chats.find(
+        (c: Chat) =>
+          !c.isGroup &&
+          c.participants.some((p: User) => p.id === activeCall.participant!.id)
+      );
+
+      if (!chat) {
+        // Create new chat if doesn't exist
+        try {
+          await createChat(activeCall.participant.id);
+          // Refresh chats to get the new chat
+          const updatedChats = await chatsAPI.getAll();
+          setChats(updatedChats);
+          chat = updatedChats.find(
+            (c: Chat) =>
+              !c.isGroup &&
+              c.participants.some(
+                (p: User) => p.id === activeCall.participant!.id
+              )
+          );
+        } catch (error) {
+          console.error("Error creating chat for call:", error);
+        }
+      }
+
+      // Save call to backend
+      try {
+        // Determine if WE were the caller or receiver for the API record
+        // If isIncomingCall is true, we received it.
+        // If isIncomingCall is false, we initiated it.
+        // The API needs 'participantId' (the OTHER person).
+
+        const participantId = activeCall.participant.id;
+        console.log("💾 Saving call to backend...", {
+          participantId,
+          callType,
+          status,
+          duration,
+          isIncomingCall,
+        });
+
+        await callsAPI.create(
+          participantId,
+          callType,
+          status || "completed",
+          duration,
+          isIncomingCall
+        );
+
+        console.log("✅ Call saved to backend successfully!");
+
+        // Refresh calls list from backend to ensure consistency
+        const updatedCalls = await callsAPI.getAll();
+        setCalls(updatedCalls);
+        console.log(
+          "✅ Call history refreshed from backend:",
+          updatedCalls.length,
+          "total calls"
+        );
+      } catch (error) {
+        console.error("❌ Error saving call history to backend:", error);
+        console.log(
+          "⚠️ This means Render backend is NOT deployed with ObjectId fix!"
+        );
+        console.log(
+          "💾 Using fallback: Adding call to local state only (will not persist after refresh)"
+        );
+
+        // Fallback: Add locally if backend fails
+        const newCall: Call = {
+          id: `call_${Date.now()}`,
+          type: callType,
+          caller: activeCall.participant!,
+          timestamp: new Date().toISOString(),
+          duration: duration || "0:00",
+          status: status || "completed",
+          direction: isIncomingCall ? "incoming" : "outgoing",
+        };
+        setCalls((prev) => [newCall, ...prev]);
+        console.log("✅ Call added to local state:", newCall);
+      }
+
+      // Add call message to chat ONLY if ending locally (not remote)
+      //This prevents duplicate messages when both users end the call
+      if (chat && !isRemote) {
+        console.log("📝 Adding call message to chat (local end)");
+        const callIcon = callType === "video" ? "📹" : "📞";
+        let callLabel = "";
+
+        if (isMissedCall) {
+          callLabel = isIncomingCall ? "Missed" : "Cancelled";
+        } else {
+          callLabel = isIncomingCall ? "Incoming" : "Outgoing";
+        }
+
+        const durationText =
+          duration && duration !== "0:00" ? ` (${duration})` : "";
+        const content = `${callIcon} ${callLabel} ${
+          callType === "video" ? "video" : "voice"
+        } call${durationText}`;
+
+        const callMessage: Message = {
+          id: `msg_${Date.now()}`,
+          senderId: currentUser.id,
+          content,
+          type: "call",
+          timestamp: new Date().toISOString(),
+          status: "read",
+          duration: duration,
+        };
+
+        setChats((prev) =>
+          prev.map((c) =>
+            c.id === chat!.id
+              ? { ...c, messages: [...c.messages, callMessage] }
+              : c
+          )
+        );
+
+        // Also send via socket for real-time update
+        try {
+          await sendMessage(chat.id, callMessage.content, callMessage.type);
+        } catch (error) {
+          console.error("Error sending call message:", error);
+        }
+      } else if (isRemote) {
+        console.log(
+          "⏩ Skipping call message creation (remote end - other user will create it)"
+        );
+      }
+    }
+    console.log("📞 VocaContext: Clearing activeCall");
+    setActiveCall(null);
+  };
+
+  // Fetch calls on mount (or when authenticated)
+  const fetchCalls = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const data = await callsAPI.getAll();
+      setCalls(data);
+    } catch (error) {
+      console.error("Error fetching calls:", error);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    fetchCalls();
+
+    // Listen for real-time call history updates
+    if (socket) {
+      const handleCallHistoryUpdate = () => {
+        console.log("📞 Call history updated, refreshing...");
+        fetchCalls();
+      };
+
+      const handleNewStatus = (newStatus: StatusUpdate) => {
+        console.log("🌟 New status received:", newStatus.id);
+        // Avoid using stale state by using functional update
+        setStatuses((prev) => {
+          // Avoid duplicates
+          if (prev.some((s) => s.id === newStatus.id)) return prev;
+          return [newStatus, ...prev];
+        });
+      };
+
+      const handleNewPost = (newPost: Post) => {
+        console.log("📝 New post received:", newPost.id);
+        // Avoid using stale state by using functional update
+        setPosts((prev) => {
+          // Avoid duplicates
+          if (prev.some((p) => p.id === newPost.id)) return prev;
+          return [newPost, ...prev];
+        });
+      };
+
+      socket.on("call:history-updated", handleCallHistoryUpdate);
+      socket.on("status:new", handleNewStatus);
+      socket.on("post:new", handleNewPost);
+
+      return () => {
+        socket.off("call:history-updated", handleCallHistoryUpdate);
+        socket.off("status:new", handleNewStatus);
+        socket.off("post:new", handleNewPost);
+      };
+    }
+  }, [fetchCalls, socket]);
+
+  // ========== STATUS ==========
+  const createStatus = async (
+    mediaUrl: string,
+    type: "text" | "image",
+    caption?: string
+  ) => {
+    try {
+      const status = await statusesAPI.create(mediaUrl, type, caption);
+      setStatuses((prev) => [status, ...prev]);
+    } catch (err) {
+      console.error("Create status error:", err);
+    }
+  };
+
+  const deleteStatus = async (statusId: string) => {
+    try {
+      await statusesAPI.delete(statusId);
+      setStatuses((prev) => prev.filter((s) => s.id !== statusId));
+    } catch (err) {
+      console.error("Delete status error:", err);
+      throw err;
+    }
+  };
+
+  // ========== POSTS ==========
+  const createPost = async (content: string, imageUrl?: string) => {
+    try {
+      const post = await postsAPI.create(content, imageUrl);
+      setPosts((prev) => [post, ...prev]);
+    } catch (err) {
+      console.error("Create post error:", err);
+    }
+  };
+
+  const likePost = async (postId: string) => {
+    try {
+      await postsAPI.like(postId);
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === postId) {
+            const isLiked = p.likes.includes(currentUser?.id || "");
+            return {
+              ...p,
+              likes: isLiked
+                ? p.likes.filter((id) => id !== currentUser?.id)
+                : [...p.likes, currentUser?.id || ""],
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err) {
+      console.error("Like post error:", err);
+    }
+  };
+
+  const commentOnPost = async (postId: string, content: string) => {
+    try {
+      const comments = await postsAPI.comment(postId, content);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, comments } : p))
+      );
+    } catch (err) {
+      console.error("Comment error:", err);
+    }
+  };
+
+  const sharePost = async (postId: string) => {
+    try {
+      await postsAPI.share(postId);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, shares: p.shares + 1 } : p))
+      );
+    } catch (err) {
+      console.error("Share post error:", err);
+    }
+  };
+
+  const deletePost = async (postId: string) => {
+    try {
+      await postsAPI.delete(postId);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    } catch (err) {
+      console.error("Delete post error:", err);
+    }
+  };
+
+  // ========== USER MANAGEMENT ==========
+  const blockUser = async (userId: string) => {
+    try {
+      await usersAPI.block(userId);
+      if (currentUser) {
+        setCurrentUser({
+          ...currentUser,
+          blockedUsers: [...(currentUser.blockedUsers || []), userId],
+        });
+      }
+    } catch (err) {
+      console.error("Block user error:", err);
+    }
+  };
+
+  const unblockUser = async (userId: string) => {
+    try {
+      await usersAPI.unblock(userId);
+      if (currentUser) {
+        setCurrentUser({
+          ...currentUser,
+          blockedUsers: currentUser.blockedUsers?.filter((id) => id !== userId),
+        });
+      }
+    } catch (err) {
+      console.error("Unblock user error:", err);
+    }
+  };
+
+  const updateUser = async (userId: string, data: Partial<User>) => {
+    try {
+      const updatedUser = await usersAPI.update(userId, data);
+      setUsers((prev) => prev.map((u) => (u.id === userId ? updatedUser : u)));
+      if (currentUser?.id === userId) {
+        setCurrentUser(updatedUser);
+      }
+    } catch (err) {
+      console.error("Update user error:", err);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    try {
+      await usersAPI.delete(userId);
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      console.error("Delete user error:", err);
+    }
+  };
+
+  const banUser = async (userId: string) => {
+    try {
+      await usersAPI.ban(userId);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isBanned: true } : u))
+      );
+    } catch (err) {
+      console.error("Ban user error:", err);
+    }
+  };
+
+  const unbanUser = async (userId: string) => {
+    try {
+      await usersAPI.unban(userId);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isBanned: false } : u))
+      );
+    } catch (err) {
+      console.error("Unban user error:", err);
+    }
+  };
+
+  const addUser = (user: Partial<User>) => {
+    // This would typically be admin creating a user
+    console.log("Add user not implemented for API", user);
+  };
+
+  // ========== ADMIN ==========
+  const createAd = async (
+    ad: Omit<Advertisement, "id" | "clicks" | "views">
+  ) => {
+    try {
+      const newAd = await adminAPI.createAd(ad);
+      setAds((prev) => [...prev, newAd]);
+    } catch (err) {
+      console.error("Create ad error:", err);
+    }
+  };
+
+  const updateAd = async (adId: string, updates: Partial<Advertisement>) => {
+    try {
+      const updatedAd = await adminAPI.updateAd(adId, updates);
+      setAds((prev) => prev.map((a) => (a.id === adId ? updatedAd : a)));
+    } catch (err) {
+      console.error("Update ad error:", err);
+    }
+  };
+
+  const deleteAd = async (adId: string) => {
+    try {
+      await adminAPI.deleteAd(adId);
+      setAds((prev) => prev.filter((a) => a.id !== adId));
+    } catch (err) {
+      console.error("Delete ad error:", err);
+    }
+  };
+
+  const toggleAd = async (adId: string) => {
+    try {
+      const updatedAd = await adminAPI.toggleAd(adId);
+      setAds((prev) => prev.map((a) => (a.id === adId ? updatedAd : a)));
+    } catch (err) {
+      console.error("Toggle ad error:", err);
+    }
+  };
+
+  const incrementAdClick = (adId: string) => {
+    setAds((prev) =>
+      prev.map((a) => (a.id === adId ? { ...a, clicks: a.clicks + 1 } : a))
+    );
+  };
+
+  const incrementAdView = (adId: string) => {
+    setAds((prev) =>
+      prev.map((a) => (a.id === adId ? { ...a, views: a.views + 1 } : a))
+    );
+  };
+
+  const createReport = (
+    report: Omit<Report, "id" | "timestamp" | "status">
+  ) => {
+    const newReport: Report = {
+      ...report,
+      id: `report_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      status: "pending",
+    };
+    setReports((prev) => [...prev, newReport]);
+  };
+
+  const resolveReport = async (
+    reportId: string,
+    status: "resolved" | "dismissed"
+  ) => {
+    try {
+      await adminAPI.updateReport(reportId, status);
+      setReports((prev) =>
+        prev.map((r) => (r.id === reportId ? { ...r, status } : r))
+      );
+    } catch (err) {
+      console.error("Resolve report error:", err);
+    }
+  };
+
+  const sendBroadcast = async (message: string) => {
+    try {
+      await adminAPI.sendBroadcast(message);
+      // Refresh chats to show the broadcast
+      const chatsData = await chatsAPI.getAll();
+      setChats(chatsData);
+    } catch (err) {
+      console.error("Broadcast error:", err);
+    }
+  };
+
+  const updateSystemSettings = async (
+    settings: Partial<{ maintenanceMode: boolean; fileUploadLimitMB: number }>
+  ) => {
+    try {
+      const updated = await adminAPI.updateSettings(settings);
+      setSystemSettings(updated);
+    } catch (err) {
+      console.error("Update settings error:", err);
+    }
+  };
+
+  // ========== SEARCH HELPERS ==========
+  const searchMessages = (query: string, chatId?: string): Message[] => {
+    const lowerQuery = query.toLowerCase();
+    let messages: Message[] = [];
+
+    const targetChats = chatId ? chats.filter((c) => c.id === chatId) : chats;
+    targetChats.forEach((chat) => {
+      chat.messages.forEach((msg) => {
+        if (msg.content.toLowerCase().includes(lowerQuery)) {
+          messages.push(msg);
+        }
+      });
+    });
+
+    return messages;
+  };
+
+  const getStarredMessages = (): { message: Message; chat: Chat }[] => {
+    const starred: { message: Message; chat: Chat }[] = [];
+    chats.forEach((chat) => {
+      chat.messages.forEach((msg) => {
+        if (msg.starredBy?.includes(currentUser?.id || "")) {
+          starred.push({ message: msg, chat });
+        }
+      });
+    });
+    return starred;
+  };
+
+  const value: VocaContextType = {
+    currentUser,
+    users,
+    chats,
+    activeChatId,
+    ads,
+    reports,
+    statuses,
+    calls,
+    loading,
+    loadingMessages,
+    error,
+
+    login,
+    googleLogin,
+    signup,
+    logout,
+    updateProfilePhoto,
+    updateSettings,
+
+    sendMessage,
+    votePoll: async (chatId: string, messageId: string, optionId: string) => {
+      // Optimistic Update
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === chatId) {
+            return {
+              ...chat,
+              messages: chat.messages.map((m) => {
+                if (m.id === messageId) {
+                  // Parse existing content
+                  try {
+                    const pollData = JSON.parse(m.content);
+                    const userId = currentUser!.id;
+                    const optionIndex = pollData.options.findIndex(
+                      (o: any) => o.id === optionId
+                    );
+
+                    if (optionIndex !== -1) {
+                      const option = pollData.options[optionIndex];
+                      const hasVoted = option.voterIds.includes(userId);
+
+                      if (hasVoted) {
+                        option.voterIds = option.voterIds.filter(
+                          (id: string) => id !== userId
+                        );
+                      } else {
+                        if (!pollData.allowMultiple) {
+                          pollData.options.forEach((opt: any) => {
+                            opt.voterIds = opt.voterIds.filter(
+                              (id: string) => id !== userId
+                            );
+                          });
+                        }
+                        option.voterIds.push(userId);
+                      }
+                      return { ...m, content: JSON.stringify(pollData) };
+                    }
+                  } catch (e) {}
+                }
+                return m;
+              }),
+            };
+          }
+          return chat;
+        })
+      );
+
+      // API Call
+      await chatsAPI.votePoll(chatId, messageId, optionId);
+    },
+    deleteMessage,
+    starMessage,
+    setActiveChatId,
+    activeCall,
+    startCall,
+    endCall,
+    createChat,
+    createGroupChat,
+    toggleArchiveChat,
+    toggleFavoriteContact,
+    markChatAsRead,
+    handleIncomingMessage,
+    handleMessageDelivered,
+    handleMessageRead,
+    handleMessageDeleted,
+    handleMessageEdited,
+    handleIncomingCall,
+
+    createStatus,
+    deleteStatus,
+    searchMessages,
+    editMessage,
+    getStarredMessages,
+
+    addUser,
+    deleteUser,
+    banUser,
+    unbanUser,
+    updateUser,
+    blockUser,
+    unblockUser,
+    deleteChat,
+
+    createAd,
+    updateAd,
+    deleteAd,
+    toggleAd,
+    incrementAdClick,
+    incrementAdView,
+
+    createReport,
+    resolveReport,
+    sendBroadcast,
+
+    posts,
+    createPost,
+    likePost,
+    commentOnPost,
+    sharePost,
+    deletePost,
+
+    systemSettings,
+    updateSystemSettings,
+
+    isAdmin,
+    refreshData,
+
+    chatHeads,
+    setChatHeads,
+    activeMiniChatId,
+    setActiveMiniChatId: (id: string | null) => setActiveMiniChatId(id),
+  };
+
+  console.log("🚀 VocaProvider returning children");
+  return <VocaContext.Provider value={value}>{children}</VocaContext.Provider>;
 };
 
 export const useVoca = () => {
-    const context = useContext(VocaContext);
-    if (context === undefined) {
-        throw new Error('useVoca must be used within a VocaProvider');
-    }
-    return context;
+  const context = useContext(VocaContext);
+  if (context === undefined) {
+    throw new Error("useVoca must be used within a VocaProvider");
+  }
+  return context;
 };

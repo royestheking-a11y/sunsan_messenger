@@ -288,7 +288,7 @@ export const ChatSidebar = () => {
           <h1 className="text-[20px] font-medium text-[var(--wa-text-primary)]">Archived</h1>
         </div>
       ) : (
-        <h1 className="text-[26px] font-bold text-[var(--wa-text-primary)] tracking-tight">Voca</h1>
+        <h1 className="text-[26px] font-bold bg-gradient-to-r from-[#F48FB1] to-[#E91E8C] bg-clip-text text-transparent tracking-tight">Sunsan</h1>
       )}
 
       {!showArchived && (
@@ -437,7 +437,7 @@ export const ChatSidebar = () => {
       {filteredChats.map(chat => {
         const otherParticipant = chat.participants.find(p => p.id !== currentUser?.id);
         const chatName = chat.isGroup ? chat.name : otherParticipant?.name;
-        const chatImage = chat.isGroup ? chat.groupImage : otherParticipant?.avatar;
+        const chatImage = chat.isGroup ? chat.groupImage : (otherParticipant?.isSunsanTeam ? '/sunsanlogo.png' : otherParticipant?.avatar);
         const lastMessage = chat.messages.length > 0 
           ? chat.messages[chat.messages.length - 1] 
           : chat.lastMessage;
@@ -496,9 +496,8 @@ export const ChatSidebar = () => {
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center gap-1.5 max-w-[70%]">
                         <h3 className="font-semibold text-[var(--wa-text-primary)] text-[17px] truncate">{chatName}</h3>
-                        {/* Blue verified badge for Voca Team */}
-                        {!chat.isGroup && otherParticipant?.isVocaTeam && (
-                          <span className="shrink-0 flex items-center justify-center w-4 h-4 bg-blue-500 rounded-full" title="Official Voca Team">
+                        {!chat.isGroup && otherParticipant?.isSunsanTeam && (
+                          <span className="shrink-0 flex items-center justify-center w-4 h-4 bg-blue-500 rounded-full" title="Official Sunsan Team">
                             <Check className="w-2.5 h-2.5 text-white" />
                           </span>
                         )}
@@ -912,7 +911,7 @@ export const ChatSidebar = () => {
               {filteredContactsForCalls.map(user => (
                 <div key={user.id} className="flex items-center gap-3 p-3 px-4 cursor-pointer transition-colors hover:bg-[var(--wa-hover)] border-b border-[var(--wa-border)] group">
                   <Avatar className="h-12 w-12 shrink-0">
-                    <AvatarImage src={user.avatar} />
+                    <AvatarImage src={user.isSunsanTeam ? '/sunsanlogo.png' : user.avatar} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
@@ -968,7 +967,7 @@ export const ChatSidebar = () => {
                 return (
                   <div key={id} className="flex flex-col items-center gap-2 cursor-pointer min-w-[60px]" onClick={() => createChat(user.id)}>
                     <Avatar className="h-14 w-14 border-2 border-[var(--wa-panel-bg)] ring-2 ring-[var(--wa-primary)]">
-                      <AvatarImage src={user.avatar} />
+                      <AvatarImage src={user.isSunsanTeam ? '/sunsanlogo.png' : user.avatar} />
                       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <span className="text-[var(--wa-text-primary)] text-xs truncate max-w-[60px]">{user.name.split(' ')[0]}</span>
@@ -1005,7 +1004,7 @@ export const ChatSidebar = () => {
         return (
           <div key={call.id} className="flex items-center gap-3 p-3 px-4 cursor-pointer transition-colors hover:bg-[var(--wa-hover)] border-b border-[var(--wa-border)] group">
             <Avatar className="h-12 w-12 shrink-0">
-              <AvatarImage src={call.caller.avatar} />
+              <AvatarImage src={call.caller.isSunsanTeam ? '/sunsanlogo.png' : call.caller.avatar} />
               <AvatarFallback>{call.caller.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
@@ -1118,7 +1117,7 @@ export const ChatSidebar = () => {
               <div key={userId} onClick={() => handleOpenStatus(userId)} className="p-4 flex items-center gap-4 cursor-pointer hover:bg-[var(--wa-hover)] transition-colors">
                 <div className="p-[2px] rounded-full border-2 border-[var(--wa-primary)]">
                   <Avatar className="h-12 w-12 border-2 border-[var(--wa-app-bg)]">
-                    <AvatarImage src={user.avatar} />
+                    <AvatarImage src={user.isSunsanTeam ? '/sunsanlogo.png' : user.avatar} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                 </div>
@@ -1257,7 +1256,7 @@ export const ChatSidebar = () => {
         <div className="absolute bottom-24 right-5 z-10 animate-in zoom-in duration-300">
           <Button
             onClick={() => setShowNewChat(true)}
-            className="w-14 h-14 rounded-2xl bg-[#00a884] hover:bg-[#008f72] text-[#0b141a] shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
+            className="w-14 h-14 rounded-2xl bg-[#E91E8C] hover:bg-[#c2185b] text-white shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
           >
             <MessageSquare className="w-6 h-6 fill-current" />
           </Button>
@@ -1267,7 +1266,7 @@ export const ChatSidebar = () => {
         <div className="absolute bottom-24 right-5 z-10 animate-in zoom-in duration-300">
           <Button
             onClick={() => setShowCreatePost(true)}
-            className="w-14 h-14 rounded-2xl bg-[#00a884] hover:bg-[#008f72] text-[#0b141a] shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
+            className="w-14 h-14 rounded-2xl bg-[#E91E8C] hover:bg-[#c2185b] text-white shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
           >
             <Edit className="w-6 h-6" />
           </Button>
@@ -1277,7 +1276,7 @@ export const ChatSidebar = () => {
         <div className="absolute bottom-24 right-5 z-10 flex flex-col gap-4 animate-in zoom-in duration-300">
           <Button
             onClick={() => setShowCamera(true)}
-            className="w-14 h-14 rounded-2xl bg-[#00a884] hover:bg-[#008f72] text-[#0b141a] shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
+            className="w-14 h-14 rounded-2xl bg-[#E91E8C] hover:bg-[#c2185b] text-white shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
           >
             <Camera className="w-6 h-6" />
           </Button>
@@ -1290,7 +1289,7 @@ export const ChatSidebar = () => {
               setContactPickerMode('call');
               setShowContactPicker(true);
             }}
-            className="w-14 h-14 rounded-2xl bg-[#00a884] hover:bg-[#008f72] text-[#0b141a] shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
+            className="w-14 h-14 rounded-2xl bg-[#E91E8C] hover:bg-[#c2185b] text-white shadow-lg flex items-center justify-center p-0 transition-transform hover:scale-105"
           >
             <Phone className="w-6 h-6 fill-current" />
           </Button>

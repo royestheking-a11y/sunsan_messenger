@@ -110,7 +110,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
 
     const result = await googleLogin(userData);
     if (result.success) {
-      toast.success("Welcome to Voca");
+      toast.success("Welcome to Sunsan Messenger");
       if (result.isAdminPanel) {
         navigate('/admin', { replace: true });
       } else {
@@ -151,7 +151,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       const result = await login(email, password);
       // login function returns { success, error, isAdminPanel }
       if (result.success) {
-        toast.success("Welcome back to Voca");
+        toast.success("Welcome back to Sunsan Messenger");
         if (result.isAdminPanel) {
           navigate('/admin', { replace: true });
         } else {
@@ -206,7 +206,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
     try {
       const success = await signup({ name, email, password });
       if (success) {
-        toast.success("Account verified & created!", { description: "Welcome to Voca!" });
+        toast.success("Account verified & created!", { description: "Welcome to Sunsan Messenger!" });
         navigate('/chat', { replace: true });
       } else {
         toast.error("Signup failed", { description: "Please try again." });
@@ -312,11 +312,11 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-2"
           >
-            <Label htmlFor="name" className="text-gray-300">Full Name</Label>
+            <Label htmlFor="name" className="text-gray-600">Full Name</Label>
             <Input
               id="name"
               placeholder="John Doe"
-              className="bg-[#0f1c24]/50 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#006D77]"
+              className="bg-white border-pink-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-[#F48FB1]"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required={!isLoginView}
@@ -326,14 +326,14 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       </AnimatePresence>
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-300">Email Address</Label>
+        <Label htmlFor="email" className="text-gray-600">Email Address</Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             id="email"
             type="email"
             placeholder="name@example.com"
-            className="pl-9 bg-[#0f1c24]/50 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#006D77]"
+            className="pl-9 bg-white border-pink-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-[#F48FB1]"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -342,14 +342,14 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-300">Password</Label>
+        <Label htmlFor="password" className="text-gray-600">Password</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
-            className="pl-9 pr-10 bg-[#0f1c24]/50 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#006D77]"
+            className="pl-9 pr-10 bg-white border-pink-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-[#F48FB1]"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -357,14 +357,14 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-gray-500 hover:text-white transition-colors focus:outline-none"
+            className="absolute right-3 top-3 text-gray-400 hover:text-[#E91E8C] transition-colors focus:outline-none"
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
         {isLoginView && (
           <div className="flex justify-end">
-            <button type="button" onClick={() => { setAuthStep('forgot-password'); setEmail(''); }} className="text-xs text-[#83C5BE] hover:underline">
+            <button type="button" onClick={() => { setAuthStep('forgot-password'); setEmail(''); }} className="text-xs text-[#F48FB1] hover:text-[#E91E8C] hover:underline">
               Forgot password?
             </button>
           </div>
@@ -373,7 +373,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
 
       <Button
         type="submit"
-        className="w-full h-11 bg-gradient-to-r from-[#006D77] to-[#005a63] hover:from-[#005a63] hover:to-[#004e56] text-white shadow-lg shadow-[#006D77]/25 border-none"
+        className="w-full h-11 bg-linear-to-r from-[#F48FB1] to-[#E91E8C] hover:opacity-90 text-white shadow-lg shadow-[#F48FB1]/30 border-none"
         disabled={isLoading}
       >
         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLoginView ? "Sign In" : "Create Account")}
@@ -381,10 +381,10 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-white/10" />
+          <span className="w-full border-t border-pink-100" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[#1f2c34] px-2 text-gray-500">Or continue with</span>
+          <span className="bg-white px-2 text-gray-400">Or continue with</span>
         </div>
       </div>
 
@@ -392,7 +392,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
         <button
           type="button"
           onClick={() => handleNativeGoogleLogin()}
-          className="w-full h-11 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg flex items-center justify-center gap-3 transition-all duration-300 backdrop-blur-sm border border-white/10 group hover:border-white/20 hover:scale-[1.02]"
+          className="w-full h-11 bg-white hover:bg-pink-50 text-gray-700 font-medium rounded-lg flex items-center justify-center gap-3 transition-all duration-300 border border-pink-200 group hover:border-pink-300 hover:scale-[1.02]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -421,27 +421,27 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
   const renderOtpView = (isReset = false) => (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <div className="w-12 h-12 bg-[#006D77]/20 rounded-full flex items-center justify-center mx-auto text-[#83C5BE]">
+        <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto text-[#F48FB1]">
           <Mail className="w-6 h-6" />
         </div>
-        <h3 className="text-white font-medium text-lg">Check your email</h3>
-        <p className="text-sm text-gray-400">
-          We sent a code to <span className="text-white font-medium">{email}</span>
+        <h3 className="text-gray-800 font-medium text-lg">Check your email</h3>
+        <p className="text-sm text-gray-500">
+          We sent a code to <span className="text-gray-700 font-medium">{email}</span>
         </p>
       </div>
 
       <div className="flex justify-center py-2">
         <InputOTP value={otpValue} onChange={setOtpValue} maxLength={6}>
           <InputOTPGroup>
-            <InputOTPSlot index={0} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
-            <InputOTPSlot index={1} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
-            <InputOTPSlot index={2} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
+            <InputOTPSlot index={0} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
+            <InputOTPSlot index={1} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
+            <InputOTPSlot index={2} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
           </InputOTPGroup>
-          <InputOTPSeparator className="text-white/20" />
+          <InputOTPSeparator className="text-pink-200" />
           <InputOTPGroup>
-            <InputOTPSlot index={3} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
-            <InputOTPSlot index={4} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
-            <InputOTPSlot index={5} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-[#0f1c24]/50 border-white/20 text-white data-[active=true]:border-[#006D77]" />
+            <InputOTPSlot index={3} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
+            <InputOTPSlot index={4} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
+            <InputOTPSlot index={5} className="w-10 h-12 md:w-12 md:h-14 text-lg bg-white border-pink-200 text-gray-800 data-[active=true]:border-[#F48FB1]" />
           </InputOTPGroup>
         </InputOTP>
       </div>
@@ -449,15 +449,15 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       <div className="space-y-4">
         <Button
           onClick={() => isReset ? verifyResetOtp() : verifySignupOtp()}
-          className="w-full h-11 bg-gradient-to-r from-[#006D77] to-[#005a63] text-white shadow-lg"
+          className="w-full h-11 bg-linear-to-r from-[#F48FB1] to-[#E91E8C] text-white shadow-lg border-none hover:opacity-90"
           disabled={otpValue.length !== 6 || isLoading}
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Continue"}
         </Button>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Expires in {formatTime(timer)}</span>
-          <button onClick={resendOtp} className="text-[#83C5BE] hover:text-white transition-colors" disabled={timer > 240}>
+          <span className="text-gray-400">Expires in {formatTime(timer)}</span>
+          <button onClick={resendOtp} className="text-[#F48FB1] hover:text-[#E91E8C] transition-colors" disabled={timer > 240}>
             Resend Code
           </button>
         </div>
@@ -468,14 +468,14 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
   const renderForgotPassword = () => (
     <form onSubmit={(e) => { e.preventDefault(); initForgotPassword(); }} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="reset-email" className="text-gray-300">Email Address</Label>
+        <Label htmlFor="reset-email" className="text-gray-600">Email Address</Label>
         <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             id="reset-email"
             type="email"
             placeholder="name@example.com"
-            className="pl-9 bg-[#0f1c24]/50 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#006D77]"
+            className="pl-9 bg-white border-pink-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-[#F48FB1]"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -484,7 +484,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       </div>
       <Button
         type="submit"
-        className="w-full h-11 bg-gradient-to-r from-[#006D77] to-[#005a63] text-white shadow-lg"
+        className="w-full h-11 bg-linear-to-r from-[#F48FB1] to-[#E91E8C] text-white shadow-lg border-none hover:opacity-90"
         disabled={isLoading}
       >
         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Reset Code"}
@@ -495,14 +495,14 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
   const renderNewPassword = () => (
     <form onSubmit={(e) => { e.preventDefault(); completePasswordReset(); }} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="new-password" className="text-gray-300">New Password</Label>
+        <Label htmlFor="new-password" className="text-gray-600">New Password</Label>
         <div className="relative">
-          <KeyRound className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <KeyRound className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             id="new-password"
             type="password"
             placeholder="Enter new password"
-            className="pl-9 bg-[#0f1c24]/50 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#006D77]"
+            className="pl-9 bg-white border-pink-200 text-gray-800 placeholder:text-gray-300 focus-visible:ring-[#F48FB1]"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
@@ -512,7 +512,7 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
       </div>
       <Button
         type="submit"
-        className="w-full h-11 bg-gradient-to-r from-[#006D77] to-[#005a63] text-white shadow-lg"
+        className="w-full h-11 bg-linear-to-r from-[#F48FB1] to-[#E91E8C] text-white shadow-lg border-none hover:opacity-90"
         disabled={isLoading}
       >
         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Update Password"}
@@ -536,83 +536,144 @@ export const LoginPage = ({ initialMode = 'login' }: LoginPageProps) => {
 
   const seoProps = isLoginView
     ? {
-      title: "Login | Voca Messenger",
-      description: "Access your secure Voca Messenger account and continue private conversations instantly.",
+      title: "Login | Sunsan Messenger",
+      description: "Access your secure Sunsan Messenger account and continue private conversations instantly.",
       url: "/login"
     }
     : {
-      title: "Create Account | Voca Messenger",
-      description: "Create your Voca Messenger account using email login and enjoy private messaging, real-time chat, and encrypted communication.",
+      title: "Create Account | Sunsan Messenger",
+      description: "Create your Sunsan Messenger account using email login and enjoy private messaging, real-time chat, and encrypted communication.",
       url: "/signup"
     };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0f1c24] relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col md:flex-row font-sans relative overflow-hidden">
       <SEO {...seoProps} />
-      <div className="absolute top-6 left-6 z-20">
-        <Button
-          variant="ghost"
-          className="text-gray-400 hover:text-white hover:bg-white/5 gap-2"
-          onClick={() => {
-            if (authStep !== 'credentials') {
-              setAuthStep('credentials');
-            } else {
-              navigate('/');
-            }
-          }}
-        >
-          <ArrowLeft className="w-5 h-5" /> {authStep !== 'credentials' ? 'Back' : 'Back to Home'}
-        </Button>
+
+      {/* Decorative floating blur circles for premium style */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/4 -right-1/4 w-[70vw] h-[70vw] rounded-full bg-[#F48FB1]/10 blur-[120px] mix-blend-multiply animate-pulse" />
+        <div className="absolute -bottom-1/4 -left-1/4 w-[70vw] h-[70vw] rounded-full bg-[#E91E8C]/5 blur-[120px] mix-blend-multiply" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] rounded-full bg-white/30 blur-[80px]" />
       </div>
 
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#006D77]/20 via-[#0f1c24] to-[#0f1c24]" />
-        <div className="absolute bottom-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-[#83C5BE]/10 via-[#0f1c24] to-[#0f1c24]" />
-      </div>
-
+      {/* Full Page Layout */}
       <motion.div
         key={authStep + (isLoginView ? 'login' : 'signup')}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-[420px] px-4 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        className="w-full min-h-screen flex flex-col md:flex-row relative z-10"
       >
-        <div className="mb-8 text-center">
-          <div className="w-16 h-16 bg-gradient-to-tr from-[#006D77] to-[#83C5BE] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#006D77]/30 mx-auto mb-6 transform rotate-3 hover:rotate-6 transition-transform">
-            <span className="text-3xl font-bold text-white">V</span>
+        {/* Left Side: Brand Panel (Full Page Column - 50% split) */}
+        <div className="hidden md:flex md:w-[50%] bg-linear-to-br from-[#F48FB1] via-[#E91E8C] to-[#D81B60] p-16 text-white flex-col justify-between relative overflow-hidden min-h-screen select-none">
+          {/* Abstract background blobs for brand panel */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-2xl" />
+
+          {/* Top: Logo */}
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-md overflow-hidden p-1">
+              <img src="/sunsanlogo.png" className="w-full h-full object-contain" />
+            </div>
+            <span className="font-bold text-sm tracking-wider uppercase">SUNSAN MESSENGER</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {header.title}
-          </h1>
-          <p className="text-gray-400">
-            {header.sub}
-          </p>
+
+          {/* Middle: Brand Message */}
+          <div className="my-auto space-y-6 relative z-10">
+            <h2 className="text-4xl font-extrabold leading-tight tracking-tight">
+              Connect globally. <br />
+              <span className="text-pink-100">Securely.</span>
+            </h2>
+            <p className="text-pink-50 text-base leading-relaxed max-w-[340px] opacity-95 font-light">
+              Experience the next generation of messaging with SUNSAN MESSENGER. End-to-end encryption, high-fidelity calls, and a design that respects your focus.
+            </p>
+            {/* Animated Micro Mockup */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 max-w-[300px] shadow-lg">
+              <div className="flex gap-2 items-center mb-3">
+                <div className="w-7 h-7 rounded-full bg-white/30" />
+                <div className="w-24 h-2 bg-white/40 rounded" />
+              </div>
+              <div className="w-full h-10 bg-white/20 rounded-lg flex items-center px-4 text-xs text-pink-100 font-medium">
+                Hey! Did you see the new Sunsan update? ✨
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom: Footer Info */}
+          <div className="flex items-center gap-2 text-xs text-pink-100/90 font-medium relative z-10">
+            <ShieldCheck className="w-4 h-4" />
+            <span>End-to-End Encrypted</span>
+          </div>
         </div>
 
-        <Card className="bg-[#1f2c34]/50 border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <CardContent className="p-8">
-            {authStep === 'credentials' && renderCredentialsForm()}
-            {authStep === 'otp' && renderOtpView(false)}
-            {authStep === 'forgot-password' && renderForgotPassword()}
-            {authStep === 'reset-otp' && renderOtpView(true)}
-            {authStep === 'new-password' && renderNewPassword()}
-          </CardContent>
+        {/* Right Side: Form Panel (Full Page Column - 50% split) */}
+        <div className="w-full md:w-[50%] p-8 sm:p-12 md:p-20 flex flex-col justify-between bg-linear-to-tr from-[#FFF5F7] to-[#ffffff] min-h-screen overflow-y-auto relative">
+          
+          {/* Back Button styled inside the form panel with perfect contrast */}
+          <div className="absolute top-6 left-6 sm:top-10 sm:left-12 md:left-20">
+            <Button
+              variant="ghost"
+              className="text-gray-500 hover:text-[#E91E8C] hover:bg-pink-50 gap-2 rounded-full px-4"
+              onClick={() => {
+                if (authStep !== 'credentials') {
+                  setAuthStep('credentials');
+                } else {
+                  navigate('/');
+                }
+              }}
+            >
+              <ArrowLeft className="w-4 h-4" /> {authStep !== 'credentials' ? 'Back' : 'Back to Home'}
+            </Button>
+          </div>
 
-          {authStep === 'credentials' && (
-            <CardFooter className="bg-[#1f2c34]/80 p-6 flex flex-col space-y-4 border-t border-white/5">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <span>{isLoginView ? "New to Voca?" : "Already have an account?"}</span>
-                <button
-                  type="button"
-                  className="text-[#83C5BE] font-medium hover:text-white transition-colors"
-                  onClick={() => { setIsLoginView(!isLoginView); setAuthStep('credentials'); }}
-                >
-                  {isLoginView ? "Sign up now" : "Log in"}
-                </button>
+          {/* Centered form wrapper to keep form size readable and elegant */}
+          <div className="my-auto max-w-md w-full mx-auto space-y-8 pt-12 md:pt-0">
+            {/* Mobile Header (Hidden on Desktop) */}
+            <div className="md:hidden text-center mb-8">
+              <div className="w-14 h-14 bg-linear-to-tr from-[#F48FB1] to-[#E91E8C] rounded-2xl flex items-center justify-center shadow-lg shadow-[#F48FB1]/20 mx-auto mb-4">
+                <span className="text-2xl font-bold text-white">V</span>
               </div>
-            </CardFooter>
+              <span className="font-bold text-xs tracking-wider text-[#E91E8C] block uppercase mb-1">SUNSAN MESSENGER</span>
+            </div>
+
+            {/* Form Title & Subtitle */}
+            <div className="text-center md:text-left space-y-1">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                {header.title}
+              </h1>
+              <p className="text-gray-500 text-sm">
+                {header.sub}
+              </p>
+            </div>
+
+            {/* Active Step Content */}
+            <div className="py-2">
+              {authStep === 'credentials' && renderCredentialsForm()}
+              {authStep === 'otp' && renderOtpView(false)}
+              {authStep === 'forgot-password' && renderForgotPassword()}
+              {authStep === 'reset-otp' && renderOtpView(true)}
+              {authStep === 'new-password' && renderNewPassword()}
+            </div>
+          </div>
+
+          {/* Switch Login/Signup Link */}
+          {authStep === 'credentials' && (
+            <div className="mt-8 pt-6 border-t border-pink-100 flex justify-center md:justify-start items-center gap-2 text-sm text-gray-500">
+              <span>{isLoginView ? "New to Sunsan Messenger?" : "Already have an account?"}</span>
+              <button
+                type="button"
+                className="text-[#E91E8C] font-semibold hover:text-[#F48FB1] hover:underline transition-colors"
+                onClick={() => {
+                  setIsLoginView(!isLoginView);
+                  setAuthStep('credentials');
+                }}
+              >
+                {isLoginView ? "Sign up now" : "Log in"}
+              </button>
+            </div>
           )}
-        </Card>
+        </div>
       </motion.div>
     </div>
   );
