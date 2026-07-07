@@ -14,12 +14,12 @@ export const SEO = ({
   image,
   type = "website",
 }: SEOProps) => {
-  const siteName = "Voca Messenger";
+  const siteName = "Sunsan Messenger";
   const defaultImage =
-    "https://res.cloudinary.com/dfvc27xla/image/upload/v1767072880/voca-logo_ggdmyk.png";
+    "https://sunsanmessenger.vercel.app/sunsanlogo.png";
   const defaultDescription =
-    "Voca Messenger is a secure, privacy-first messaging platform offering real-time chat, voice and video calls, and encrypted communication using email-based login.";
-  const baseUrl = "https://vocamessenger.vercel.app";
+    "Sunsan Messenger is a secure, privacy-first messaging platform offering real-time chat, voice and video calls, and encrypted communication using email-based login.";
+  const baseUrl = "https://sunsanmessenger.vercel.app";
   const fullUrl = url
     ? url.startsWith("http")
       ? url
