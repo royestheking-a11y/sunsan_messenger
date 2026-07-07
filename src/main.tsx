@@ -18,15 +18,15 @@ if ("serviceWorker" in navigator) {
       const registrations = await navigator.serviceWorker.getRegistrations();
       for (const registration of registrations) {
         const url = registration.active?.scriptURL || "";
-        if (!url.includes("sw-v2.js")) {
+        if (!url.includes("sw.js") || url.includes("sw-v2.js")) {
           console.log("🗑️ Unregistering old SW:", url);
           await registration.unregister();
         }
       }
 
       // Now register the new one
-      const registration = await navigator.serviceWorker.register("/sw-v2.js");
-      console.log("✅ Service Worker v2 registered:", registration.scope);
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      console.log("✅ Service Worker registered:", registration.scope);
       await registration.update();
     } catch (error) {
       console.warn("⚠️ Service Worker registration failed:", error);
